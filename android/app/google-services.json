@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "339334159762",
+    "project_id": "smu-soft",
+    "storage_bucket": "smu-soft.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:339334159762:android:b3a6f89eed62e5d6bb754b",
+        "android_client_info": {
+          "package_name": "com.example.test_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHbZaFQUHLdoxQV_JLFjMyXmr7V_dSpUQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
