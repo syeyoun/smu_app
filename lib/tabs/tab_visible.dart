@@ -156,7 +156,7 @@ class _TabVisibleState extends State<TabVisible> {
           );
         } else if (snapshot.hasError) {
           // Optionally handle error here...
-          return Text('An error occurr
+          return Text('An error occurred');
         } else {
           return GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
