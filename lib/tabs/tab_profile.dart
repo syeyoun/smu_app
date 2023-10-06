@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_1/models/model_auth.dart';
 import 'package:test_1/models/model_item_provider.dart';
+import 'package:test_1/models/model_time.dart';
 
 class TabProfile extends StatelessWidget {
   @override
@@ -12,7 +13,7 @@ class TabProfile extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("Cart Profile"),
+          Text("Profile"),
           LoginOutButton(itemIndex: 3),
         ],
       ),
@@ -28,14 +29,13 @@ class LoginOutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final itemProvider = Provider.of<ItemProvider>(context);
-    final authClient =
-      Provider.of<FirebaseAuthProvider>(context, listen: false);
+    // final authClient = Provider.of<FirebaseAuthProvider>(context, listen: false);
+    final logoutTimerProvider = Provider.of<LogoutTimerProvider>(context, listen: false);
     return TextButton(
         onPressed: () async {
           //decrease
           await itemProvider.decrementAllPrices();
-
-          await authClient.logout();
+          logoutTimerProvider.startLogoutCountdown();
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(content: Text('logout!')));

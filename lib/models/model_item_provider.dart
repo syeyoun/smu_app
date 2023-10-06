@@ -2,14 +2,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'model_item.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class ItemProvider with ChangeNotifier {
+
   late CollectionReference itemsReference;
   List<Item> items = [];
 
   ItemProvider({reference}) {
     itemsReference = reference ??
-        FirebaseFirestore.instance.collection('items');
+        FirebaseFirestore.instance.collection('items0');
+        // FirebaseFirestore.instance.collection('items1');
   }
 
   Future<void> fetchItems() async {
@@ -30,6 +33,19 @@ class ItemProvider with ChangeNotifier {
       'price': FieldValue.increment(1),
       // Add any other fields that should be updated here...
     });
+
+    // // Get current time
+    // Timestamp currentTime = Timestamp.now();
+    //
+    // // Update 'lastIn' field with current time.
+    // items[index].lastIn = currentTime;
+
+    // Update the item in Firestore.
+    // await itemsReference.doc(items[index].id).update({
+    //   'price': FieldValue.increment(1),
+    //   // 'lastIn': currentTime, // Add this line to update 'lastIn' field in Firestore.
+    //   // Add any other fields that should be updated here...
+    // });
 
     notifyListeners();
 
@@ -53,7 +69,6 @@ class ItemProvider with ChangeNotifier {
     for (var item in items) {
       // Decrease the price of the local item.
       item.price--;
-
       // Update the price of the corresponding item in Firestore.
       await itemsReference.doc(item.id).update({
         'price': FieldValue.increment(-1),

@@ -5,40 +5,48 @@ import 'package:flutter/cupertino.dart';
 class Item {
   late String id;
   late int price;
-  late String title;
-  late bool isIncreased; //추가
-  //
+  // late String title;
+  // late bool isIncreased; //추가
+  // late Timestamp lastIn;
   // late String id_2;
   late bool open;
+  // late int t_price;
 
   Item({
     required this.id,
     required this.price,
-    required this.title,
-    required this.isIncreased,
-    //
+    // required this.title,
+    // required this.isIncreased,
     required this.open,
     // required this.id_2,
+    // required this.lastIn,
+    // required this.t_price,
+
   });
 
   Item.fromSnapshot(DocumentSnapshot snapshot) {
     Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
     id = snapshot.id;
     price = data['price'];
-    title = data['title'];
-    isIncreased = data['isIncreased']; // 추가
-    //
+    // title = data['title'];
+    // isIncreased = data['isIncreased']; // 추가
     open = data['open'];
     // id_2 = data['id_2'];
+
+    // lastIn = data['lastIn'];
+    // t_price = data['t_price'];
   }
 
   Item.fromMap(Map<String, dynamic> data) {
     id = data['id'];
     price = data['price'];
-    title = data['title'];
+    // title = data['title'];
 
-    isIncreased = data['isIncreased'];
+    // isIncreased = data['isIncreased'];
     open = data['open'];
+
+    // lastIn=data['lastIn'];
+    // t_price = data['t_price'];
     // id_2 = data['id_2'];
   }
 
@@ -46,11 +54,13 @@ class Item {
     return {
       'id': id,
       'price': price,
-      'title': title,
-      'isIncreased': isIncreased,
-      //
+      // 'title': title,
+      // 'isIncreased': isIncreased,
       // 'id_2': id_2,
       'open': open,
+
+      // 'lastIn':lastIn,
+      // 't_price':t_price,
     };
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_1/models/model_item_provider.dart';
+import 'package:test_1/models/model_time.dart';
 
 class TabVisible extends StatefulWidget {
   @override
@@ -147,6 +148,7 @@ class _TabVisibleState extends State<TabVisible> {
   @override
   Widget build(BuildContext context) {
     final itemProvider = Provider.of<ItemProvider>(context);
+    final logoutTimerProvider = Provider.of<LogoutTimerProvider>(context, listen: false);
     return FutureBuilder(
       future: itemProvider.fetchItems(),
       builder: (context, snapshot) {
@@ -167,12 +169,20 @@ class _TabVisibleState extends State<TabVisible> {
               itemBuilder: (context, index) {
                 bool isClicked = clickedItems[index] ?? false;
                 return GridTile(
-                    child: InkWell(
+                    child:
+                    InkWell(
                       onTap: isClicked ? null : () async { // Make this callback async.
                         setState(() {
                           clickedItems[index] = true;
                         });
-                        await itemProvider.incrementPrice(index); // Call incrementPrice() here.
+                        await itemProvider.incrementPrice(index); // Call incrementPrice() here
+                        logoutTimerProvider.onLogoutComplete = () {
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(SnackBar(content: Text('logout!')));
+                          Navigator.of(context).pushReplacementNamed('/login');
+                        };
+                        logoutTimerProvider.startLogoutCountdown();
                       },
                       child: Container(
                         padding: EdgeInsets.all(10),
@@ -186,6 +196,7 @@ class _TabVisibleState extends State<TabVisible> {
                               isClicked ?16 :20,color:
                               Colors.red),
                             ),
+                            Text('Remaining Time:${logoutTimerProvider.getRemainingTime()}'), // 로그아웃까지 남은 시간 표시
                             isClicked ?
                             Text("사용중!", style:
                             TextStyle(fontSize:

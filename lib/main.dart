@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_1/firebase_options.dart';
 import 'package:test_1/models/model_auth.dart';
+import 'package:test_1/models/model_time.dart';
 import 'screens/screen_splash.dart';
 import 'screens/screen_index.dart';
 import 'screens/screen_login.dart';
@@ -26,8 +27,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => FirebaseAuthProvider()),
         ChangeNotifierProvider(create: (_) => ItemProvider()),
+        ChangeNotifierProvider(create: (_) => LogoutTimerProvider()),
         //ChangeNotifierProvider(create: (_) => QueryProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
+        // ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: MaterialApp(
         title: 'Flutter Shopping mall',
