@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_1/models/model_item_provider.dart';
+import 'package:test_1/models/model_qrcode.dart';
+import 'package:test_1/screens/screen_qr.dart';
 
 class TabHome extends StatelessWidget{
 
@@ -36,7 +38,10 @@ class TabHome extends StatelessWidget{
               itemBuilder: (context, index) {
                 return GridTile(
                     child: InkWell(
-                      onTap: () { },
+                      onTap: () {       Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ScannerScreen()),
+                      ); },
                       child: Container(
                         padding: EdgeInsets.all(10),
                         child: Column(
@@ -49,6 +54,7 @@ class TabHome extends StatelessWidget{
                             // ),
                             Text(itemProvider.items[index].open ? '열림' : '닫힘',
                               style: TextStyle(fontSize: 16, color: Colors.red),)
+
                           ],
                         ),
                       ),

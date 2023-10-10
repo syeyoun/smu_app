@@ -11,7 +11,7 @@ class ItemProvider with ChangeNotifier {
 
   ItemProvider({reference}) {
     itemsReference = reference ??
-        FirebaseFirestore.instance.collection('items0');
+        FirebaseFirestore.instance.collection('items1');
         // FirebaseFirestore.instance.collection('items1');
   }
 

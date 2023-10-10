@@ -2,10 +2,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:test_1/tabs/tab_home.dart';
-import 'package:test_1/tabs/tab_visible.dart';
 import 'package:test_1/tabs/tab_lock.dart';
 import 'package:test_1/tabs/tab_profile.dart';
-
+import 'package:test_1/tabs/tab_visible_1.dart';
+import 'package:test_1/models/model_hash.dart';
+import 'package:provider/provider.dart';
 
 class IndexScreen extends StatefulWidget {
 
@@ -22,13 +23,15 @@ class _IndexScreenState extends State<IndexScreen> {
   final List<Widget> tabs = [
     TabHome(),
     TabLock(),
-    TabVisible(),
+    // TabVisible(),
+    MyWidget(),
     TabProfile(),
     // TabProfile(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    var hashProvider = Provider.of<HashProvider>(context);
     return Scaffold(
       appBar: AppBar(),
       bottomNavigationBar: BottomNavigationBar(
@@ -39,6 +42,26 @@ class _IndexScreenState extends State<IndexScreen> {
         selectedLabelStyle: TextStyle(fontSize: 12),
         currentIndex: _currentIndex,
         onTap: (index) {
+          if (index == 1&& hashProvider.hashValue == ''){
+            showDialog(
+              context:  context,
+              builder: (ctx)=>AlertDialog(
+                title : Text('QR로 인증해주세요!'),
+                content : Text('~'),
+                  actions: <Widget>[
+                    TextButton(
+                    child: Text('OK'),
+                    onPressed:(){
+                      Navigator.of(context).pop();
+                      setState(() {
+                        _currentIndex = 0; // Set index to the first tab.
+                      });
+                    },
+                  ),
+                ],
+              )
+            );
+          }
           setState(() {
             _currentIndex = index;
           });
