@@ -11,18 +11,18 @@ class ItemProvider with ChangeNotifier {
 
   ItemProvider({reference}) {
     itemsReference = reference ??
-        FirebaseFirestore.instance.collection('items1');
-        // FirebaseFirestore.instance.collection('items1');
+        FirebaseFirestore.instance.collection('items3');
+    // FirebaseFirestore.instance.collection('items1');
   }
 
   Future<void> fetchItems() async {
-    items = await itemsReference.get().then( (QuerySnapshot results) {
-      return results.docs.map( (DocumentSnapshot document) {
+    items = await itemsReference.get().then((QuerySnapshot results) {
+      return results.docs.map((DocumentSnapshot document) {
         return Item.fromSnapshot(document);
       }).toList();
     });
     notifyListeners();
-    }
+  }
 
   Future<void> incrementPrice(int index) async {
     // Increase the price of the item at the given index.
@@ -33,37 +33,8 @@ class ItemProvider with ChangeNotifier {
       'price': FieldValue.increment(1),
       // Add any other fields that should be updated here...
     });
-
-    // // Get current time
-    // Timestamp currentTime = Timestamp.now();
-    //
-    // // Update 'lastIn' field with current time.
-    // items[index].lastIn = currentTime;
-
-    // Update the item in Firestore.
-    // await itemsReference.doc(items[index].id).update({
-    //   'price': FieldValue.increment(1),
-    //   // 'lastIn': currentTime, // Add this line to update 'lastIn' field in Firestore.
-    //   // Add any other fields that should be updated here...
-    // });
-
     notifyListeners();
-
   }
-
-  // Future<void> decrementPrice(int index) async {
-  //   // Decrease the price of the item at the given index.
-  //   items[index].price--;
-  //
-  //   // Update the item in Firestore.
-  //   await itemsReference.doc(items[index].id).update({
-  //     'price': FieldValue.increment(-1),
-  //     // Add any other fields that should be updated here...
-  //   });
-  //
-  //   notifyListeners();
-  //
-  // }
 
   Future<void> decrementAllPrices() async {
     for (var item in items) {
@@ -79,5 +50,17 @@ class ItemProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> incrementAllPrices() async {
+    for (var item in items) {
+      // Decrease the price of the local item.
+      item.price++;
+      // Update the price of the corresponding item in Firestore.
+      await itemsReference.doc(item.id).update({
+        'price': FieldValue.increment(1),
+        // Add any other fields that should be updated here...
+      });
+    }
 
+    notifyListeners();
+  }
 }

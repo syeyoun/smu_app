@@ -7,6 +7,7 @@ import 'package:test_1/tabs/tab_profile.dart';
 import 'package:test_1/tabs/tab_visible_1.dart';
 import 'package:test_1/models/model_hash.dart';
 import 'package:provider/provider.dart';
+import 'package:test_1/tabs/tab_visible_2.dart';
 
 class IndexScreen extends StatefulWidget {
 
@@ -24,7 +25,7 @@ class _IndexScreenState extends State<IndexScreen> {
     TabHome(),
     TabLock(),
     // TabVisible(),
-    MyWidget(),
+    MyWidget_1(),
     TabProfile(),
     // TabProfile(),
   ];
@@ -33,11 +34,14 @@ class _IndexScreenState extends State<IndexScreen> {
   Widget build(BuildContext context) {
     var hashProvider = Provider.of<HashProvider>(context);
     return Scaffold(
-      appBar: AppBar(),
+        appBar: AppBar(
+            title: Text("SMU"),
+            centerTitle: true,
+            backgroundColor: Color(0xff0E207F)),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         iconSize: 44,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: Color(0xff0E207F),
         unselectedItemColor: Colors.grey,
         selectedLabelStyle: TextStyle(fontSize: 12),
         currentIndex: _currentIndex,
@@ -46,11 +50,14 @@ class _IndexScreenState extends State<IndexScreen> {
             showDialog(
               context:  context,
               builder: (ctx)=>AlertDialog(
-                title : Text('QR로 인증해주세요!'),
-                content : Text('~'),
+                title : Text('QR로 인증해주세요!',style: TextStyle(
+                  color: Color(0xff0E207F), // 원하는 색상으로 변경
+                ),),
                   actions: <Widget>[
                     TextButton(
-                    child: Text('OK'),
+                    child: Text('OK',style: TextStyle(
+                      color: Color(0xff0E207F), // 원하는 색상으로 변경
+                    ),),
                     onPressed:(){
                       Navigator.of(context).pop();
                       setState(() {
