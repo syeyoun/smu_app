@@ -7,9 +7,9 @@ import 'package:test_1/models/model_item_provider.dart';
 import 'package:test_1/models/model_time.dart';
 import 'package:test_1/models/model_tabstate.dart';
 import 'package:test_1/main.dart';
-import '../models/model_hash.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-// var r_qr = await hashProvider.getQRNumFromFirebase();
+final notifications = FlutterLocalNotificationsPlugin();
 
 class MyWidget_1 extends StatefulWidget {
   @override
@@ -36,16 +36,29 @@ class _MyWidgetState extends State<MyWidget_1> {
     return hours * 60 + minutes;
   }
 
+  showNotification() async {
+    var androidDetails = AndroidNotificationDetails(
+      'a',
+      'b',
+      priority: Priority.high,
+      importance: Importance.max,
+      color: Color.fromARGB(255, 255, 0, 0),
+    );
+
+    // 알림 id, 제목, 내용 맘대로 채우기
+    notifications.show(
+        1,
+        '제목1',
+        '내용1',
+        NotificationDetails(android: androidDetails)
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // FirebaseFirestore firestore = FirebaseFirestore.instance;
     final itemProvider = Provider.of<ItemProvider>(context);
     final logoutTimerProvider = Provider.of<LogoutTimerProvider>(context);
     final tabState = Provider.of<TabState>(context);
-    final hashProvider = Provider.of<HashProvider>(context);
-    hashProvider.getQRCodeDataFromSharedPreferences();
-    var hash = hashProvider.hashValue;
-    var r_qr = hashProvider.qrnum;
 
     return FutureBuilder(
         future: itemProvider.fetchItems(),
@@ -59,7 +72,7 @@ class _MyWidgetState extends State<MyWidget_1> {
                   left: 100,
                   child:
                   Text("사용중!", style:
-                  TextStyle(fontSize: 35, color: Color((0xff0E207F))),
+                  TextStyle(fontSize: 25, color: Color((0xff0E207F))),
                   ),
                 ),
                 Positioned(
@@ -68,15 +81,15 @@ class _MyWidgetState extends State<MyWidget_1> {
                   child:
                   Text(
                       '남은 시간! ${logoutTimerProvider.getRemainingTime()}', style:
-                  TextStyle(fontSize: 35, color: Color(0xff0E207F))),
+                  TextStyle(fontSize: 25, color: Color(0xff0E207F))),
                 ),
                 Positioned(
                     bottom: 100,
                     left: 100,
                     child:
                     Container(
-                        width: 300,
-                        height: 90,
+                        width: 200,
+                        height: 60,
                         child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xff0E207F),
@@ -99,7 +112,7 @@ class _MyWidgetState extends State<MyWidget_1> {
                             } : null,
                             child:
                             Text('연장?', style:
-                            TextStyle(fontSize: 35, color:
+                            TextStyle(fontSize: 25, color:
                             Colors.white),
                             )
                         )
@@ -110,7 +123,7 @@ class _MyWidgetState extends State<MyWidget_1> {
                   Positioned(
                       bottom: 100, left: 100, child:
                   Container(
-                      width: (300), height: (90), child:
+                      width: (200), height: (60), child:
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor:
                       Color(0xff0E207F),
@@ -118,54 +131,21 @@ class _MyWidgetState extends State<MyWidget_1> {
                         BorderRadius.circular(30.0),),),
                       onPressed: (tabState.isClicked)
                           ? null : () async {
-                        // await initializeRQR();
-                        // if(hash == 'https://me-qr.com/4X8tPNxD') {
-                        if(hash == r_qr) {
-                          await itemProvider.incrementAllPrices();
-                          await tabState.toggleClick();
-                          logoutTimerProvider.onLogoutComplete = () async {
-                            await itemProvider.decrementAllPrices();
-                            logoutTimerProvider.logoutUser();
-                            tabState.resetClick();
-                            logoutAndRedirect();
-                            //// itemProvider.decrementAllPrices();
-                            //// await logoutAndRedirect();
-                            //// await itemProvider.decrementAllPrices();
-                            //// await logoutTimerProvider.logoutAndRedirect(context);
-                          };
-                          await logoutTimerProvider.startLogoutCountdown();
-                        }
-                        else{
-                          ScaffoldMessenger.of(context)
-                            ..hideCurrentSnackBar()
-                            ..showSnackBar(
-                              SnackBar(content: Text('QR인식 후에 다시 시도해주세요.',style: TextStyle(fontSize: 20))),);
-                        }
-                        // if(hash == 'https://me-qr.com/4X8tPNxD') {
-                        //   await itemProvider.incrementAllPrices();
-                        //   await tabState.toggleClick();
-                        //   logoutTimerProvider.onLogoutComplete = () async {
-                        //     await itemProvider.decrementAllPrices();
-                        //     logoutTimerProvider.logoutUser();
-                        //     tabState.resetClick();
-                        //     logoutAndRedirect();
-                        //     // itemProvider.decrementAllPrices();
-                        //     // await logoutAndRedirect();
-                        //     // await itemProvider.decrementAllPrices();
-                        //     // await logoutTimerProvider.logoutAndRedirect(context);
-                        //   };
-                        //   await logoutTimerProvider.startLogoutCountdown();
-                        // }
-                        // else{
-                        //   ScaffoldMessenger.of(context)
-                        //     ..hideCurrentSnackBar()
-                        //     ..showSnackBar(
-                        //       SnackBar(content: Text('QR인식 후에 다시 시도해주세요.',style: TextStyle(fontSize: 20))),);
-                        // }
+                        await showNotification();
+                        await itemProvider.incrementAllPrices();
+                        await tabState.toggleClick();
+                        logoutTimerProvider.onLogoutComplete = () async {
+                          await itemProvider.decrementAllPrices();
+                          logoutTimerProvider.logoutUser();
+                          tabState.resetClick();
+                          logoutAndRedirect();
+                        };
+                        // await showNotification();
+                        await logoutTimerProvider.startLogoutCountdown();
                       },
                       child:
-                      Text(r_qr.toString(), style:
-                      TextStyle(fontSize: 35, color:
+                      Text('출석?', style:
+                      TextStyle(fontSize: 25, color:
                       Colors.white,),
                       )
                   )

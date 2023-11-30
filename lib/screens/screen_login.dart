@@ -126,6 +126,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_1/models/model_auth.dart';
 import 'package:test_1/models/model_login.dart';
+import 'package:test_1/models/model_permission.dart';
+import 'package:test_1/models/model_hash.dart';
 
 class LoginScreen extends StatelessWidget {
   @override
@@ -198,9 +200,10 @@ class PasswordInput extends StatelessWidget {
 class LoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final authClient =
-    Provider.of<FirebaseAuthProvider>(context, listen: false);
+    final authClient = Provider.of<FirebaseAuthProvider>(context, listen: false);
     final login = Provider.of<LoginModel>(context, listen: false);
+    final userPermissionProvider = Provider.of<UserPermissionProvider>(context, listen: false); // 추가된 부분
+    final hashProvider = Provider.of<HashProvider>(context);
 
     return Container(
       width: MediaQuery.of(context).size.width * 0.7,
@@ -215,7 +218,7 @@ class LoginButton extends StatelessWidget {
         onPressed: () async {
           await authClient
               .loginWithEmail(login.email, login.password)
-              .then((loginStatus) {
+              .then((loginStatus) async { // async 추가
             if (loginStatus == AuthStatus.loginSuccess) {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
@@ -223,6 +226,17 @@ class LoginButton extends StatelessWidget {
                     content: Text('welcome! ' +
                         authClient.user!.email! +
                         ' '))); //email자리에 username 넣기
+
+              // 권한 부여 과정 추가
+              if(authClient.user != null && authClient.user!.email != null) {
+                userPermissionProvider.email = authClient.user!.email!;
+                await userPermissionProvider.updateAccess();
+              }
+
+              if( hashProvider.qrnum == null){
+                await hashProvider.getQRNumFromFirebase();
+              }
+
               Navigator.pushReplacementNamed(context, '/index');
             } else {
               ScaffoldMessenger.of(context)

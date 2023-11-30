@@ -5,11 +5,14 @@ import 'package:provider/provider.dart';
 import 'package:test_1/models/model_item_provider.dart';
 import 'package:test_1/models/model_qrcode.dart';
 import 'package:test_1/screens/screen_qr.dart';
+import 'package:test_1/models/model_hash.dart';
 
 class TabHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final itemProvider = Provider.of<ItemProvider>(context);
+    final hashProvider = Provider.of<HashProvider>(context);
+
     return FutureBuilder(
       future: itemProvider.fetchItems(),
       builder: (context, snapshot) {
@@ -38,8 +41,8 @@ class TabHome extends StatelessWidget {
                               child:
                               Text (
                                   itemProvider.items[index].open ? '열려있어요!' : '닫혀있어요!',
-                                  style :
-                                  TextStyle(fontSize :(35),color :(Color((0xff0E207F))))
+                                  style:
+                                  TextStyle(fontSize :(25),color :(Color((0xff0E207F))))
                               )
                           ),
                           Positioned(
@@ -47,9 +50,19 @@ class TabHome extends StatelessWidget {
                               left: 100, // replace with actual values
                               child :
                               Text (
-                                  itemProvider.items[index].price.toString()+'명이 사용중이에요!',
+                                  itemProvider.items[index].price.toString()+'명이 사용중이에',
                                   style:
-                                  TextStyle(fontSize:(35),color:(Color((0xff0E207F))))
+                                  TextStyle(fontSize:(25),color:(Color((0xff0E207F))))
+                              )
+                          ),
+                          Positioned(
+                              top: 300, // replace with actual values
+                              left: 100, // replace with actual values
+                              child :
+                              Text (
+                                  itemProvider.items[index].card.toString()+'이 카드를 가지고 있어요!',
+                                  style:
+                                  TextStyle(fontSize:(25),color:(Color((0xff0E207F))))
                               )
                           ),
                         ],
@@ -63,18 +76,21 @@ class TabHome extends StatelessWidget {
                   bottom:100,   // replace with actual value or remove this line if not needed.
                   child:
                   Container (
-                    width :(300),// desired width
-                    height :(90),// desired height
+                    width :(200),// desired width
+                    height :(60),// desired height
 
                     child:ElevatedButton (
                         style:ElevatedButton.styleFrom (
                           backgroundColor :(Color(0xff0E207F)),
                           shape:(RoundedRectangleBorder(borderRadius:(BorderRadius.circular(30.0)))),
                         ) ,
-                        onPressed:(() {Navigator.push(context ,MaterialPageRoute(builder:(context)=>ScannerScreen()));}),
+                        onPressed:(() async
+                        {
+                          await hashProvider.getQRNumFromFirebase();
+                          Navigator.push(context ,MaterialPageRoute(builder:(context)=>ScannerScreen()));}),
                         child:
                         Text('QR스캐너!',style:
-                        TextStyle(fontSize:35,color:Colors.white),
+                        TextStyle(fontSize:25,color:Colors.white),
                         )
                     ),
                   ),

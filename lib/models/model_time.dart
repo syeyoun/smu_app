@@ -12,10 +12,12 @@ import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:test_1/models/model_tabstate.dart';
+import 'dart:math';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class LogoutTimerProvider with ChangeNotifier {
   bool hasLogoutCompleted = false;
-  Duration _logoutDuration = Duration(seconds: 10);
+  Duration _logoutDuration = Duration(seconds: 100);
   late CollectionReference itemsReference;
   List<Item> items = [];
 
@@ -25,7 +27,6 @@ class LogoutTimerProvider with ChangeNotifier {
   final FirebaseAuthProvider _authProvider;
 
   Timer? _timer;
-  // Duration _logoutDuration = Duration(seconds: 10);
   LogoutTimerProvider({FirebaseAuthProvider? authProvider, ItemProvider? itemProv})
       : _authProvider = authProvider ?? FirebaseAuthProvider(),
         itemProvider = itemProv ?? ItemProvider();
@@ -43,22 +44,30 @@ class LogoutTimerProvider with ChangeNotifier {
     notifyListeners();
   }
 
+
   Future<void> startLogoutCountdown() async{
     // Duration _logoutDuration = Duration(seconds: 10);
+
+    // 알림 설정
+    // var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+    //     'your channel id', 'your channel name',
+    //     importance: Importance.max, priority: Priority.high, showWhen: false);
+    // // var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    // var platformChannelSpecifics = NotificationDetails(
+    //     android: androidPlatformChannelSpecifics,);
     _isCountdownStarted = true;
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
 
       if (_logoutDuration == Duration(seconds:0)) {
-        // Call the callback function when the timer completes
-        // logoutUser();
-        // itemProvider.decrementAllPrices();
-        // logoutAndRedirect();
         if (onLogoutComplete != null) {
-         // logoutUser();
-         //  hasLogoutCompleted = true;
           onLogoutComplete!();
-          // logoutUser();
-
+          // 알림 표시
+          // await flutterLocalNotificationsPlugin.show(
+          //     0,
+          //     'Logout Complete',
+          //     'You have successfully logged out',
+          //     platformChannelSpecifics,
+          //     payload: 'item x');
           // notifyListeners();
         }
         // notifyListeners();
@@ -68,15 +77,6 @@ class LogoutTimerProvider with ChangeNotifier {
       }
     });
   }
-
-  // Future<void> logoutAndRedirect() async {
-  //   ScaffoldMessenger.of(navigatorKey.currentContext)
-  //     ..hideCurrentSnackBar()
-  //     ..showSnackBar(SnackBar(content: Text('logout!')));
-  //
-  //   // GlobalKey를 사용하여 Navigator 상태에 접근
-  //   navigatorKey.currentState.pushReplacementNamed('/login');
-  // }
 
   Future<void> logoutUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

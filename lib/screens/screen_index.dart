@@ -1,6 +1,7 @@
 //screens/screen_index.dart
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:test_1/tabs/tab_card.dart';
 import 'package:test_1/tabs/tab_home.dart';
 import 'package:test_1/tabs/tab_lock.dart';
 import 'package:test_1/tabs/tab_profile.dart';
@@ -8,6 +9,8 @@ import 'package:test_1/tabs/tab_visible_1.dart';
 import 'package:test_1/models/model_hash.dart';
 import 'package:provider/provider.dart';
 import 'package:test_1/tabs/tab_visible_2.dart';
+import 'package:test_1/models/model_permission.dart';
+import 'package:test_1/tabs/selection.dart';
 
 class IndexScreen extends StatefulWidget {
 
@@ -23,10 +26,12 @@ class _IndexScreenState extends State<IndexScreen> {
 
   final List<Widget> tabs = [
     TabHome(),
-    TabLock(),
+    // TabLock(),
     // TabVisible(),
     MyWidget_1(),
     TabProfile(),
+    TabCard(),
+    busbook(1),
     // TabProfile(),
   ];
 
@@ -46,7 +51,7 @@ class _IndexScreenState extends State<IndexScreen> {
         selectedLabelStyle: TextStyle(fontSize: 12),
         currentIndex: _currentIndex,
         onTap: (index) {
-          if (index == 1&& hashProvider.hashValue == ''){
+          if (index == 10&& hashProvider.hashValue == ''){
             showDialog(
               context:  context,
               builder: (ctx)=>AlertDialog(
@@ -75,9 +80,11 @@ class _IndexScreenState extends State<IndexScreen> {
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'home'),
-          BottomNavigationBarItem(icon: Icon(Icons.lock_open), label: 'Lock'),//search
+          // BottomNavigationBarItem(icon: Icon(Icons.lock_open), label: 'Lock'),//search
           BottomNavigationBarItem(icon: Icon(Icons.visibility), label: 'visible'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.lock_open), label: 'Lock'),//search
+          BottomNavigationBarItem(icon: Icon(Icons.lock_open), label: 'selection'),//search
         ],
       ),
       body: tabs[_currentIndex]
