@@ -49,7 +49,7 @@ class UserPermissionProvider with ChangeNotifier {
   // }
   //
   Future<void> grantAccessToTabCard() async {
-    if (_email == 's@gmail.com' || _email == 'lime2@gmail.com') {
+    if (_email == 's@gmail.com' ) {
       _hasAccessToTabCard = true;
     }
     notifyListeners();

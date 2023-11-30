@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:test_1/tabs/tab_card.dart';
 import 'package:test_1/tabs/tab_home.dart';
-import 'package:test_1/tabs/tab_lock.dart';
 import 'package:test_1/tabs/tab_profile.dart';
 import 'package:test_1/tabs/tab_visible_1.dart';
 import 'package:test_1/models/model_hash.dart';
@@ -11,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:test_1/tabs/tab_visible_2.dart';
 import 'package:test_1/models/model_permission.dart';
 import 'package:test_1/tabs/selection.dart';
+import 'package:test_1/tabs/tab_board.dart';
 
 class IndexScreen extends StatefulWidget {
 
@@ -32,6 +32,7 @@ class _IndexScreenState extends State<IndexScreen> {
     TabProfile(),
     TabCard(),
     busbook(1),
+    TabLock(),
     // TabProfile(),
   ];
 
@@ -84,7 +85,8 @@ class _IndexScreenState extends State<IndexScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.visibility), label: 'visible'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'profile'),
           BottomNavigationBarItem(icon: Icon(Icons.lock_open), label: 'Lock'),//search
-          BottomNavigationBarItem(icon: Icon(Icons.lock_open), label: 'selection'),//search
+          BottomNavigationBarItem(icon: Icon(Icons.chair_alt), label: 'selection'),//search
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'board'),//search
         ],
       ),
       body: tabs[_currentIndex]

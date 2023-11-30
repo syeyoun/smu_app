@@ -4,7 +4,6 @@ import 'package:test_1/tabs/seat1.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
 class design {
   static InputDecoration dec(String b) {
     InputDecoration c = InputDecoration(

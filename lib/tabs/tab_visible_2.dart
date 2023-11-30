@@ -118,8 +118,6 @@ class _MyWidgetState extends State<MyWidget_1> {
                         BorderRadius.circular(30.0),),),
                       onPressed: (tabState.isClicked)
                           ? null : () async {
-                        // await initializeRQR();
-                        // if(hash == 'https://me-qr.com/4X8tPNxD') {
                         if(hash == r_qr) {
                           await itemProvider.incrementAllPrices();
                           await tabState.toggleClick();
@@ -128,10 +126,6 @@ class _MyWidgetState extends State<MyWidget_1> {
                             logoutTimerProvider.logoutUser();
                             tabState.resetClick();
                             logoutAndRedirect();
-                            //// itemProvider.decrementAllPrices();
-                            //// await logoutAndRedirect();
-                            //// await itemProvider.decrementAllPrices();
-                            //// await logoutTimerProvider.logoutAndRedirect(context);
                           };
                           await logoutTimerProvider.startLogoutCountdown();
                         }
@@ -141,27 +135,6 @@ class _MyWidgetState extends State<MyWidget_1> {
                             ..showSnackBar(
                               SnackBar(content: Text('QR인식 후에 다시 시도해주세요.',style: TextStyle(fontSize: 20))),);
                         }
-                        // if(hash == 'https://me-qr.com/4X8tPNxD') {
-                        //   await itemProvider.incrementAllPrices();
-                        //   await tabState.toggleClick();
-                        //   logoutTimerProvider.onLogoutComplete = () async {
-                        //     await itemProvider.decrementAllPrices();
-                        //     logoutTimerProvider.logoutUser();
-                        //     tabState.resetClick();
-                        //     logoutAndRedirect();
-                        //     // itemProvider.decrementAllPrices();
-                        //     // await logoutAndRedirect();
-                        //     // await itemProvider.decrementAllPrices();
-                        //     // await logoutTimerProvider.logoutAndRedirect(context);
-                        //   };
-                        //   await logoutTimerProvider.startLogoutCountdown();
-                        // }
-                        // else{
-                        //   ScaffoldMessenger.of(context)
-                        //     ..hideCurrentSnackBar()
-                        //     ..showSnackBar(
-                        //       SnackBar(content: Text('QR인식 후에 다시 시도해주세요.',style: TextStyle(fontSize: 20))),);
-                        // }
                       },
                       child:
                       Text(r_qr.toString(), style:

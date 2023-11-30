@@ -15,7 +15,7 @@ import 'package:test_1/models/model_tabstate.dart';
 import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-class LogoutTimerProvider with ChangeNotifier {
+class LogoutTimerProvider with ChangeNotifier,WidgetsBindingObserver {
   bool hasLogoutCompleted = false;
   Duration _logoutDuration = Duration(seconds: 100);
   late CollectionReference itemsReference;
@@ -29,7 +29,33 @@ class LogoutTimerProvider with ChangeNotifier {
   Timer? _timer;
   LogoutTimerProvider({FirebaseAuthProvider? authProvider, ItemProvider? itemProv})
       : _authProvider = authProvider ?? FirebaseAuthProvider(),
-        itemProvider = itemProv ?? ItemProvider();
+        itemProvider = itemProv ?? ItemProvider(){
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (state == AppLifecycleState.paused) {
+      // 앱이 백그라운드로 갔을 때 현재 시간을 저장
+      await prefs.setInt('backgroundTime', DateTime.now().millisecondsSinceEpoch);
+    } else if (state == AppLifecycleState.resumed) {
+      // 앱이 포그라운드로 돌아왔을 때 저장된 시간을 불러와 현재 시간과 비교
+      int? backgroundTime = prefs.getInt('backgroundTime');
+      if (backgroundTime != null) {
+        Duration diff = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(backgroundTime));
+        // diff를 사용하여 남은 시간을 계산
+        if (_logoutDuration > diff) {
+          _logoutDuration -= diff;
+        } else {
+          _logoutDuration = Duration(seconds: 0);
+        }
+        notifyListeners();
+      }
+    }
+  }
 
   bool _isCountdownStarted = false; // 추가된 상태
 
@@ -44,30 +70,13 @@ class LogoutTimerProvider with ChangeNotifier {
     notifyListeners();
   }
 
-
   Future<void> startLogoutCountdown() async{
-    // Duration _logoutDuration = Duration(seconds: 10);
-
-    // 알림 설정
-    // var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-    //     'your channel id', 'your channel name',
-    //     importance: Importance.max, priority: Priority.high, showWhen: false);
-    // // var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-    // var platformChannelSpecifics = NotificationDetails(
-    //     android: androidPlatformChannelSpecifics,);
     _isCountdownStarted = true;
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
 
       if (_logoutDuration == Duration(seconds:0)) {
         if (onLogoutComplete != null) {
           onLogoutComplete!();
-          // 알림 표시
-          // await flutterLocalNotificationsPlugin.show(
-          //     0,
-          //     'Logout Complete',
-          //     'You have successfully logged out',
-          //     platformChannelSpecifics,
-          //     payload: 'item x');
           // notifyListeners();
         }
         // notifyListeners();
@@ -83,7 +92,6 @@ class LogoutTimerProvider with ChangeNotifier {
     prefs.setBool('isLogin', false);
     prefs.setString('email', '');
     prefs.setString('password', '');
-    // await itemProvider.decrementAllPrices();
     await _authProvider.logout(); // FirebaseAuthProvider의 logout() 메서드 호출
     await cancelLogoutTimer();
     _logoutDuration = Duration(seconds: 10);
@@ -97,7 +105,6 @@ class LogoutTimerProvider with ChangeNotifier {
 
   String getRemainingTime() {
     if (_timer == null || !_timer!.isActive) return '00:00';
-    // Duration _logoutDuration = Duration(seconds: 10);
     final now = DateTime.now();
     final logoutTime = now.add(_logoutDuration);
     final remainingDuration = logoutTime.difference(now);
@@ -111,6 +118,7 @@ class LogoutTimerProvider with ChangeNotifier {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     cancelLogoutTimer(); // 프로바이더가 소멸될 때 타이머도 함께 취소
     super.dispose();
   }

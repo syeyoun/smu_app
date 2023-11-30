@@ -15,7 +15,7 @@ class _Busseats2State extends State<Busseats2> {
   List<List<int>> _chairStatus = List.generate(2, (i) => List<int>.filled(2, 0));
 
   Future<void> fetchChairStatuses() async {
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 6; i++) {
       for (int j = 0; j < 2; j++) {
         DocumentSnapshot doc = await FirebaseFirestore.instance.collection('chair').doc('chair${i * 2 + j + 1}').get();
         var data = doc.data() as Map<String, dynamic>;
@@ -62,48 +62,6 @@ class _Busseats2State extends State<Busseats2> {
       },
     );
   }
-
-  // Widget selectedChair(int a , int b){
-  //   return
-  //     InkWell(
-  //       onTap: (){
-  //         _chairStatus[a][b]=1;
-  //         setState(() {
-  //         });
-  //       },
-  //       child: Container(
-  //         decoration: BoxDecoration(
-  //             color: Colors.blue,
-  //             borderRadius: BorderRadius.circular(3.0)
-  //         ),
-  //       ),
-  //     );
-  // }
-
-  // Widget availableChair(int a, int b){
-  //   final tabState = Provider.of<TabState>(context);
-  //   return InkWell(
-  //     onTap: (){
-  //       if(tabState.isClicked){
-  //         _chairStatus[a][b]=4;
-  //       } else {
-  //         _chairStatus[a][b]=2;
-  //       }
-  //       setState(() {
-  //       });
-  //     },
-  //     child: Container(
-  //       decoration: BoxDecoration(
-  //         color: tabState.isClicked ? Colors.blue : Colors.yellow,
-  //         borderRadius: BorderRadius.circular(3.0),
-  //         border : Border.all(
-  //           color: Color.fromRGBO(0, 0, 0, 1),
-  //           width: 1,
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Widget availableChair(int a, int b){
     FirebaseAuth auth = FirebaseAuth.instance;
