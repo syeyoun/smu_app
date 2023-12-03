@@ -30,7 +30,7 @@ class _IndexScreenState extends State<IndexScreen> {
     // TabVisible(),
     MyWidget_1(),
     TabProfile(),
-    TabCard(),
+    // TabCard(),
     busbook(1),
     TabLock(),
     // TabProfile(),
@@ -84,7 +84,7 @@ class _IndexScreenState extends State<IndexScreen> {
           // BottomNavigationBarItem(icon: Icon(Icons.lock_open), label: 'Lock'),//search
           BottomNavigationBarItem(icon: Icon(Icons.visibility), label: 'visible'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'profile'),
-          BottomNavigationBarItem(icon: Icon(Icons.lock_open), label: 'Lock'),//search
+          // BottomNavigationBarItem(icon: Icon(Icons.lock_open), label: 'Lock'),//search
           BottomNavigationBarItem(icon: Icon(Icons.chair_alt), label: 'selection'),//search
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'board'),//search
         ],

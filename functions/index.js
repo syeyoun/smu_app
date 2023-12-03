@@ -2,20 +2,28 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
-// Firestore document reference
-const itemsRef = admin.firestore().collection("QR").doc("B5WxFun8tLdhe5tYdJ5w");
+// Firestore collection reference
+const itemsRef = admin.firestore().collection("chair");
 
 // Cloud Function
-exports.updateRandomValue = functions.region("asia-northeast3").pubsub.schedule("10 22 * * 7").onRun(async (context) => {
+exports.updateAllFields = functions.region("asia-northeast3").pubsub.schedule("* 0 * * *").onRun(async (context) => {
   try {
-    // Generate a random alphabet between a and z
-    const randomAlphabet = String.fromCharCode(97 + Math.floor(Math.random() * 26));
+    // Get all documents in 'chair' collection
+    const snapshot = await itemsRef.get();
 
-    // Update the 'qrnum' field in Firestore
-    await itemsRef.update({"qrnum": randomAlphabet});
+    // Update all fields in all documents to 'a'
+    snapshot.forEach(async (doc) => {
+      const data = doc.data();
+      for (const key in data) {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+          data[key] = "a";
+        }
+      }
+      await itemsRef.doc(doc.id).set(data);
+    });
 
-    console.log("'qrnum' updated. Current value: " + randomAlphabet);
+    console.log("All fields in 'chair' collection updated to 'a'");
   } catch (error) {
-    console.error("Error updating 'qrnum':", error);
+    console.error("Error updating fields:", error);
   }
 });

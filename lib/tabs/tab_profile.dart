@@ -10,17 +10,21 @@ import 'package:test_1/models/model_time.dart';
 import 'package:test_1/models/model_tabstate.dart';
 import 'package:test_1/main.dart';
 import 'package:test_1/screens/screen_qr_2.dart';
-
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:test_1/models/model_permission.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:test_1/models/model_item_provider.dart';
+import 'package:test_1/models/model_time.dart';
+import 'package:test_1/models/model_tabstate.dart';
+import 'package:test_1/main.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:test_1/models/model_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 String cardVal = '';
-/*class TabProfile extends StatefulWidget {
 
-  @override
-  _TabProfile createState() {
-    return _TabProfile();
-  }
-}*/
-//class _TabProfile extends State<TabProfile> {
 class TabProfile extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
@@ -31,42 +35,16 @@ class TabProfile extends StatelessWidget{
             children: [
               Text("사용자 정보"),
               LoginOutButton(itemIndex: 3),
-              CardQr()
+              CardQr(),
+              Expanded(child: TabCard()),
             ],
           ),
         )
     );
   }
-/*Future<String?> QRCheck() async{
-    final prefs = await SharedPreferences.getInstance();
-    //cardVal = prefs.getString('card_data')!;
-    print(cardVal);
-    if(cardVal == 'https://me-qr.com/EEtHTSEE'){
-      // users 컬렉션의 모든 문서를 가져옵니다.
-      QuerySnapshot userSnapshot = await FirebaseFirestore.instance.collection('users').get();
-      // 모든 username 값을 리스트에 저장합니다.
-      List<String> usernames = userSnapshot.docs.map((doc) => doc.get('username') as String).toList();
-      // usernames 리스트의 첫 번째 값을 가져옵니다.
-      String firstUsername = usernames[0];
-      // items1 컬렉션의 특정 문서의 card 필드를 username의 값으로 업데이트합니다.
-      await FirebaseFirestore.instance.collection('items1').doc('AN4TLA8ts0AGLAlivfoM').update({
-        'card': firstUsername,
-      });
-    }
-
-    else if(cardVal != 'https://me-qr.com/EEtHTSEE' || cardVal == ''){
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text('올바르지 않은 QR입니다. 다시 시도해 주세요.',style: TextStyle(fontSize: 20)),
-          ),
-        );}
-  }*/
 }
 
 class LoginOutButton extends StatelessWidget {
-
   final int itemIndex;
   LoginOutButton({required this.itemIndex});
 
@@ -81,7 +59,6 @@ class LoginOutButton extends StatelessWidget {
           if (tabState.isClicked) {
             await itemProvider.decrementAllPrices();
           }
-          // await itemProvider.decrementAllPrices();
           tabState.resetClick();
           logoutTimerProvider.logoutUser();
           logoutAndRedirect();
@@ -99,7 +76,6 @@ class CardQr extends StatelessWidget{
             builder: (context) => AlertDialog(
               title: const Text('주의!'),
               content: Text('카드키 관리자 변경을 하시겠습니까?'),
-              // content: Text('Of course not!'),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -117,5 +93,54 @@ class CardQr extends StatelessWidget{
             ));
       }),
       child: Text('카드키 관리자'),);
+  }
+}
+
+class TabCard extends StatelessWidget {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    final userPermissionProvider = Provider.of<UserPermissionProvider>(context);
+    if (userPermissionProvider.hasAccessToTabCard) {
+      return Scaffold(
+        body: Center(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.5, // 화면 너비의 80%
+            height: MediaQuery.of(context).size.height * 0.5, // 화면 높이의 60%
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Flexible( // Flexible 위젯 추가
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(hintText: '카드키를 가지고있는사람은?'),
+                    ),
+                    SizedBox(height: 20.0),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await FirebaseFirestore.instance.collection('items1').doc('AN4TLA8ts0AGLAlivfoM').update({
+                          'card': _controller.text,
+                        });
+                        _controller.clear();
+                      },
+                      child: Text('데이터베이스에 저장'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      return Scaffold(
+        body: Center(
+          child: Text('이 페이지에 접근할 권한이 없습니다'),
+        ),
+      );
+    }
   }
 }
