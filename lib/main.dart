@@ -109,7 +109,7 @@ class MyApp extends StatelessWidget {
 
       ],
       child: MaterialApp(
-        title: 'Flutter Shopping mall',
+        title: 'Chamber for CS students',
         routes: {
           '/index': (context) => IndexScreen(),
           '/login': (context) => LoginScreen(),

@@ -11,9 +11,19 @@ class Busseats2 extends StatefulWidget {
   _Busseats2State createState() => _Busseats2State();
 }
 
-class AdditionalScreen extends StatelessWidget {
+class AdditionalScreen extends StatefulWidget {
   final String chairNumber;
+
   AdditionalScreen({required this.chairNumber});
+
+  @override
+  _AdditionalScreenState createState() => _AdditionalScreenState();
+}
+
+class _AdditionalScreenState extends State<AdditionalScreen> {
+  void refresh() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +43,10 @@ class AdditionalScreen extends StatelessWidget {
         runSpacing: 4.0,
         children: List.generate(8, (index) {
           int time = 13 + index;
-          return TimeSlot(time: '$time시', chairNumber: chairNumber);
+          return TimeSlot(time: '$time시',
+            chairNumber: widget.chairNumber,
+            onReserved: refresh,
+          );
         }),
       ),
     );
@@ -43,7 +56,9 @@ class AdditionalScreen extends StatelessWidget {
 class TimeSlot extends StatefulWidget {
   final String time;
   final String chairNumber;
-  TimeSlot({required this.time, required this.chairNumber});
+  final VoidCallback onReserved;
+
+  TimeSlot({required this.time, required this.chairNumber, required this.onReserved});
 
   @override
   _TimeSlotState createState() => _TimeSlotState(chairNumber);
@@ -87,13 +102,13 @@ class _TimeSlotState extends State<TimeSlot> {
           Future<int> getUserReservationCount(String uid_chair) async {
             // Firestore에서 chair 컬렉션 전체를 가져옵니다.
             QuerySnapshot chairSnapshot = await FirebaseFirestore.instance.collection('chair').get();
-
             // userID의 예약이 몇 개인지 세어봅니다.
             int reservationCount = 0;
             chairSnapshot.docs.forEach((doc) {
               Map<String, dynamic> chairData = doc.data() as Map<String, dynamic>;
               chairData.values.forEach((value) {
                 if (value == uid_chair) {
+                  print('a');
                   reservationCount++;
                 }
               });
@@ -105,23 +120,33 @@ class _TimeSlotState extends State<TimeSlot> {
 
           return InkWell(
             onTap: () async{
-              int reservationCount =0;
-              getUserReservationCount(uid_chair);
+              // print(reservationCount);
+              int reservationCount = 0;
+              await getUserReservationCount(uid_chair).then((value) {
+                reservationCount = value;
+              });
               // 다른 사용자가 예약한 시간을 선택한 경우
               if (bookedUserId != 'a' && bookedUserId != uid_chair) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('예약이 되어있어요!')),
                 );
               }
-              // else if (bookedUserId == 'a') {
-              //   if (reservationCount >= 3) {
-              //     // userID의 예약이 3개 이상이면 SnackBar를 띄웁니다.
-              //     ScaffoldMessenger.of(context).showSnackBar(
-              //       SnackBar(content: Text('3시간 이상 예약 불가능해요!')),
-              //     );
-              //   }
-              // }
+              else if (bookedUserId == 'a' && reservationCount >= 3) {
+                // if (reservationCount >= 3)
+                  // userID의 예약이 3개 이상이면 SnackBar를 띄웁니다.
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('3시간 이상 예약 불가능해요!')),
+                  );
+              }
               else {
+                // print(uid_chair);
+                // print(reservationCount);
+                //   if (bookedUserId== 'a' && reservationCount >= 3) {
+                //     // userID의 예약이 3개 이상이면 SnackBar를 띄웁니다.
+                //     ScaffoldMessenger.of(context).showSnackBar(
+                //       SnackBar(content: Text('3시간 이상 예약 불가능해요!')),
+                //     );
+                //   }
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
@@ -155,72 +180,90 @@ class _TimeSlotState extends State<TimeSlot> {
                         ],
                       );
                     }
+                    // 예약 가능한 시간을 선택한 경우
                     else {
-                      int _selectedHour = 1;  // 기본값을 1시간으로 설정합니다.
-                      // void _updateSelectedHour(int? newValue) {
-                      //   setState(() {
-                      //     _selectedHour = newValue!;
-                      //   });
-                      // }
-                      Future<void> _updateReservation() async {
-                        List<Future> updates = [];
-                        for (int i = 0; i < _selectedHour; i++) {
-                          // widget.time에서 시간 부분만 추출하고, i를 더해 새로운 시간을 계산합니다.
-                          String newTime = (int.parse(widget.time.split('시')[0]) + i).toString() + '시';
-                          updates.add(
-                              FirebaseFirestore.instance
-                                  .collection('chair')
-                                  .doc(chairNumber)
-                                  .update({
-                                newTime: uid_chair  // 예약 시간을 업데이트합니다.
-                              })
-                          );
-                        }
-                        await Future.wait(updates);
-                      }
-                      return StatefulBuilder(
-                          builder: (context, setState) {
-                            int _selectedHour = 1;  // 선택된 시간 값을 저장하는 변수입니다.
-                            void _updateSelectedHour(int? newValue) {
-                              setState(() {
-                                _selectedHour = newValue!;  // 선택된 시간 값을 업데이트합니다.
-                              });
-                            }
-                            // Future<int> _selectedHourFuture = Future.value(1);
-                            return AlertDialog(
-                              title: Text('예약하기'),
-                              content: StatefulBuilder(
-                                builder: (context, setState) {
-                                  int _selectedHour = 1;
-
-                                  void _updateSelectedHour(int? newValue) {
-                                    setState(() {
-                                      _selectedHour = newValue!;
-                                    });
-                                  }
-
-                                  return Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                      Text('${widget.time}부터 몇시간 예약하시나요?'),
-                                      DropdownButton<int>(
-                                        value: _selectedHour,
-                                        items: <int>[1, 2, 3].map<DropdownMenuItem<int>>((int value) {
-                                          return DropdownMenuItem<int>(
-                                            value: value,
-                                            child: Text('$value 시간'),
-                                          );
-                                        }).toList(),
-                                        onChanged: _updateSelectedHour,
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
+                      bool _isLoading = false;
+                      int _selectedHours = 1;
+                      return AlertDialog(
+                        title: Text('예약하기'),
+                        content: StatefulBuilder(
+                          builder: (BuildContext context,
+                              StateSetter setState) {
+                            return Stack(
+                              children: [
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Text('${widget.time}부터 몇시간 예약하시겠습니까?'),
+                                    DropdownButton<int>(
+                                      value: _selectedHours,
+                                      items: <int>[1, 2, 3].map((int value) {
+                                        return DropdownMenuItem<int>(
+                                          value: value,
+                                          child: Text('$value 시간'),
+                                        );
+                                      }).toList(),
+                                      onChanged: (int? newValue) {
+                                        setState(() {
+                                          _selectedHours =
+                                              newValue ?? _selectedHours;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                if (_isLoading)
+                                  Center(child: CircularProgressIndicator()),
+                              ],
                             );
-                          }
+                          },
+                        ),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('예'),
+                            onPressed: () async {
+                              if(_selectedHours+reservationCount > 3){
+                                // 3시간 이상 예약이 불가능하다는 스낵바를 보여줍니다.
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text('3시간 이상 예약이 불가능합니다.'),
+                                  duration: Duration(seconds: 2),
+                                ));
+                                // 다이얼로그를 닫습니다.
+                                Navigator.of(context).pop();
+                                return;
+                              }
+                              setState(() {
+                                _isLoading = true; // 예약 시작 시 로딩 상태를 true로 설정
+                              });
+                              for (int i = 0; i < _selectedHours; i++) {
+                                int time = int.parse(
+                                    widget.time.replaceFirst('시', '')) + i;
+                                if (time > 20) {  // 만약 시간이 20을 초과하면 루프를 종료합니다.
+                                  break;
+                                }
+                                String updatedTime = '$time시';
+                                FirebaseFirestore.instance
+                                    .collection('chair')
+                                    .doc(chairNumber)
+                                    .update({updatedTime: uid_chair});
+                                bookedUserId = uid_chair;
+                              }
+                              setState(() {
+                                _isLoading =
+                                false; // 예약 완료 후 로딩 상태를 false로 설정
+                              });
+                              widget.onReserved();
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: Text('아니오'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
                       );
-
                     }
                   },
                 );
@@ -231,10 +274,11 @@ class _TimeSlotState extends State<TimeSlot> {
               padding: EdgeInsets.all(10),
               margin: EdgeInsets.all(5),
               decoration: BoxDecoration(
-                border: Border.all(color: color),
+                color: color,  // 박스 배경색을 color로 설정
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Text(widget.time),
+              child: Text(widget.time,
+                style: TextStyle(color: Colors.white),),
             ),
           );
         }
@@ -270,11 +314,14 @@ class _Busseats2State extends State<Busseats2> {
                               ? reservecheck(i, 0)
                               : Container(),
                         ),
-                        Text(
-                          "예약 테이블1",  // 원하는 텍스트로 변경하세요.
-                          style: TextStyle(
-                            color: Colors.white,  // 원하는 텍스트 색깔로 변경하세요.
-                            fontSize: 12,  // 원하는 텍스트 크기로 변경하세요.
+                        Material(
+                          color: Colors.transparent,
+                          child: Text(
+                            "예약 테이블1",  // 원하는 텍스트로 변경하세요.
+                            style: TextStyle(
+                              color: Colors.white,  // 원하는 텍스트 색깔로 변경하세요.
+                              fontSize: 12,  // 원하는 텍스트 크기로 변경하세요.
+                            ),
                           ),
                         ),
                       ],
@@ -311,11 +358,14 @@ class _Busseats2State extends State<Busseats2> {
                               ? reservecheck(i, 1)
                               : Container(),
                         ),
-                        Text(
-                          "예약 테이블2",  // 원하는 텍스트로 변경하세요.
-                          style: TextStyle(
-                            color: Colors.white,  // 원하는 텍스트 색깔로 변경하세요.
-                            fontSize: 12,  // 원하는 텍스트 크기로 변경하세요.
+                        Material(
+                          color: Colors.transparent,
+                          child: Text(
+                            "예약 테이블2",  // 원하는 텍스트로 변경하세요.
+                            style: TextStyle(
+                              color: Colors.white,  // 원하는 텍스트 색깔로 변경하세요.
+                              fontSize: 12,  // 원하는 텍스트 크기로 변경하세요.
+                            ),
                           ),
                         ),
                       ],
@@ -329,11 +379,10 @@ class _Busseats2State extends State<Busseats2> {
     );
   }
 
-
-
   Widget reservecheck(int i, int x) {
     String chairNumber = 'chair' + (i * 10 + x + 1).toString();
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         showDialog(
           context: context,

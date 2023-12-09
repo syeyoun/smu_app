@@ -130,8 +130,8 @@ class _MyWidgetState extends State<MyWidget_1> {
                               });
                             } : null,
                             child:
-                            Text(tabState.isClicked.toString(), style:
-                            TextStyle(fontSize: 20, color:
+                            Text('연장', style:
+                            TextStyle(fontSize: 25, color:
                             Colors.white),
                             )
                         )
@@ -150,7 +150,7 @@ class _MyWidgetState extends State<MyWidget_1> {
                         BorderRadius.circular(30.0),),),
                       onPressed: (tabState.isClicked)
                           ? null : () async {
-                        // if (hash == r_qr) {
+                        if (hash == r_qr) {
                           await itemProvider.incrementAllPrices();
                           await tabState.toggleClick();
                           Map<String, dynamic>? userInfo = await _getUInfo(uid_attendance);
@@ -162,18 +162,18 @@ class _MyWidgetState extends State<MyWidget_1> {
                             'timestamp': FieldValue.serverTimestamp(),
                           });
                           await logoutTimerProvider.startLogoutCountdown();
-                        // }
-                        // else {
-                        //   ScaffoldMessenger.of(context)
-                        //     ..hideCurrentSnackBar()
-                        //     ..showSnackBar(
-                        //       SnackBar(content: Text('QR인식 후에 다시 시도해주세요.',
-                        //           style: TextStyle(fontSize: 20))),);
-                        // }
+                        }
+                        else {
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(
+                              SnackBar(content: Text('QR인식 후에 다시 시도해주세요.',
+                                  style: TextStyle(fontSize: 20))),);
+                        }
                       },
                       child:
-                      Text(tabState.isClicked.toString(), style:
-                      TextStyle(fontSize: 20, color:
+                      Text('출석', style:
+                      TextStyle(fontSize: 25, color:
                       Colors.white,),
                       )
                   )

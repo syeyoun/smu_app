@@ -26,9 +26,11 @@ class _IndexScreenState extends State<IndexScreen> {
   final List<Widget> tabs = [
     // TabLock(),
     // TabVisible(),
+    busbook(1),
+
     MyWidget_1(),
     // TabCard(),
-    busbook(1),
+    // busbook(1),
     TabHome(),
     TabLock(),
     TabProfile(),
@@ -80,9 +82,11 @@ class _IndexScreenState extends State<IndexScreen> {
           },
           items: [
             // BottomNavigationBarItem(icon: Icon(Icons.lock_open), label: 'Lock'),//search
+            BottomNavigationBarItem(icon: Icon(Icons.chair_alt), label: 'reservation'),//search
+
             BottomNavigationBarItem(icon: Icon(Icons.done), label: 'attendance'),
             // BottomNavigationBarItem(icon: Icon(Icons.lock_open), label: 'Lock'),//search
-            BottomNavigationBarItem(icon: Icon(Icons.chair_alt), label: 'reservation'),//search
+            // BottomNavigationBarItem(icon: Icon(Icons.chair_alt), label: 'reservation'),//search
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'home'),
             BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'board'),//search
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'profile'),

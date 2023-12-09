@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:test_1/tabs/seat_n.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+int fieldACount = 0;
 Future<int> countFieldAInChairCollection() async {
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('chair').get();
   int fieldACount = 0;
@@ -15,7 +18,8 @@ Future<int> countFieldAInChairCollection() async {
       }
     });
   }
-  return 18 - fieldACount;
+  print(fieldACount);
+  return fieldACount;
 }
 
 class design {
@@ -92,6 +96,34 @@ class _busbookState extends State<busbook> {
     // b = d;
   }
 
+Future<void> cancelAllReservations() async {
+  String userID = FirebaseAuth.instance.currentUser!.uid;
+
+  // chair 컬렉션에 접근합니다.
+  CollectionReference chairs = FirebaseFirestore.instance.collection('chair');
+
+  // 모든 chair 문서를 가져옵니다.
+  QuerySnapshot querySnapshot = await chairs.get();
+
+  // 각 chair 문서에 대해 수행합니다.
+  for (var doc in querySnapshot.docs) {
+    DocumentReference chair = FirebaseFirestore.instance.collection('chair').doc(doc.id);
+
+    // chair 문서의 모든 필드를 가져옵니다.
+    Map<String, dynamic>? fields = doc.data() as Map<String, dynamic>?;
+
+    if (fields != null) {
+      // 각 필드에 대해 수행합니다.
+      for (var field in fields.entries) {
+        // 필드 값이 사용자 ID와 일치하면 'a'로 변경합니다.
+        if (field.value == userID) {
+          chair.update({field.key: 'a'});
+        }
+      }
+    }
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -105,25 +137,31 @@ class _busbookState extends State<busbook> {
               child: Stack(
                 children: [
                   Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        FutureBuilder<int>(
-                          future: countFieldAInChairCollection(),
-                          builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return Text('데이터 로딩 중...');
-                            } else if (snapshot.hasError) {
-                              return Text('데이터 로드 실패: ${snapshot.error}');
-                            } else {
-                              return Text(
-                                '남은 예약 가능 시간: ${snapshot.data}'+'시간',
-                                style: TextStyle(fontSize:(20),color:(Color((0xff0E207F)))),
-                              );
-                            }
-                          },
-                        ),
-                      ],
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance.collection('chair').snapshots(),
+                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                        if (snapshot.hasError) {
+                          return Text('데이터 로드 실패: ${snapshot.error}');
+                        }
+
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Text("데이터 로딩 중...");
+                        }
+
+                        // 데이터 변화가 감지되면 UI를 업데이트
+                        final docs = snapshot.data!.docs;
+                        int fieldACount = docs.fold(0, (prev, doc) {
+                          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                          int countA = data.values.where((v) => v == 'a').length;
+                          return prev + countA;
+                        });
+                        int availableTime = fieldACount;
+
+                        return Text(
+                          '남은 예약 가능 시간: $availableTime시간',
+                          style: TextStyle(fontSize: 20, color: Color(0xff0E207F)),
+                        );
+                      },
                     ),
                   )
                 ],
@@ -140,18 +178,59 @@ class _busbookState extends State<busbook> {
               height: 7,
             ),
             (a == 1)
-                ? Container(
-                padding: EdgeInsets.all(8),
-                margin: EdgeInsets.fromLTRB(0, 80, 0, 0),
-                width: 300,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Color.fromRGBO(0, 0, 0, 1),
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(6),
+                ? Stack(
+              children: [
+                Container(
+                    padding: EdgeInsets.all(8),
+                    margin: EdgeInsets.fromLTRB(0, 80, 0, 0),
+                    width: 300,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Color.fromRGBO(0, 0, 0, 1),
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Busseats2()
                 ),
-                child: Busseats2())
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: TextButton(
+                    child: Text("예약 전체 취소",style: TextStyle(fontSize: 15, color: Color(0xff0E207F))),
+                    onPressed: () async {
+                      // cancelAllReservations();
+                      // 예/아니오 선택을 위한 Alert Dialog를 보여줍니다.
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('예약 취소'),
+                            content: Text('예약을 전부 취소하시겠습니까?'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text('예'),
+                                onPressed: () {
+                                  cancelAllReservations();
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              TextButton(
+                                child: Text('아니오'),
+                                onPressed: () {
+                                  // "예"를 선택했을 때의 동작을 작성하세요.
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            )
                 : Container(
                 padding: EdgeInsets.all(8),
                 margin: EdgeInsets.fromLTRB(0, 80, 0, 0),
