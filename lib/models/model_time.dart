@@ -19,7 +19,7 @@ import 'package:test_1/models/model_tabstate.dart';
 
 class LogoutTimerProvider with ChangeNotifier,WidgetsBindingObserver {
   bool hasLogoutCompleted = false;
-  Duration logoutDuration = Duration(seconds: 20);
+  Duration logoutDuration = Duration(minutes: 10);
   late CollectionReference itemsReference;
   List<Item> items = [];
 
@@ -54,9 +54,12 @@ class LogoutTimerProvider with ChangeNotifier,WidgetsBindingObserver {
         Duration diff = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(backgroundTime));
         // diff를 사용하여 남은 시간을 계산
         if (logoutDuration > diff) {
-          logoutDuration -= diff;
+          // logoutDuration -= diff;
           // logoutAndRedirect_1();
-          await startLogoutCountdown();
+          if(_tabState == true) {
+            logoutDuration -= diff;
+            await startLogoutCountdown();
+          }
         } else {
           logoutDuration = Duration(seconds: 0);
           // logoutAndRedirect();
@@ -125,7 +128,7 @@ class LogoutTimerProvider with ChangeNotifier,WidgetsBindingObserver {
         });
       }
     }
-    logoutDuration = Duration(seconds: 20);
+    logoutDuration = Duration(minutes: 10);
     await cancelLogoutTimer();
     await _tabState.resetClick();
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -147,7 +150,7 @@ class LogoutTimerProvider with ChangeNotifier,WidgetsBindingObserver {
     // await _tabState.resetClick();
     // await _authProvider.logout(); // FirebaseAuthProvider의 logout() 메서드 호출
     // await cancelLogoutTimer();
-    logoutDuration = Duration(seconds: 20);
+    logoutDuration = Duration(minutes: 10);
     // notifyListeners();
   }
 

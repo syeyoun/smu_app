@@ -220,7 +220,7 @@ class LoginButton extends StatelessWidget {
     Duration logoutDuration = Provider.of<LogoutTimerProvider>(context, listen: false).logoutDuration;
     // Duration duration = Duration(seconds: 20);
     Future<void> setLogoutDuration_login(Duration duration) async {
-      logoutDuration = Duration(seconds: 20);
+      logoutDuration = Duration(minutes: 10);
     }
     return Container(
       width: MediaQuery.of(context).size.width * 0.7,

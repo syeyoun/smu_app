@@ -235,18 +235,45 @@ class _TimeSlotState extends State<TimeSlot> {
                               setState(() {
                                 _isLoading = true; // 예약 시작 시 로딩 상태를 true로 설정
                               });
+
+                              bool isReserved = false;  // 예약 여부를 확인하는 변수를 추가합니다.
+
                               for (int i = 0; i < _selectedHours; i++) {
-                                int time = int.parse(
-                                    widget.time.replaceFirst('시', '')) + i;
+                                int time = int.parse(widget.time.replaceFirst('시', '')) + i;
                                 if (time > 20) {  // 만약 시간이 20을 초과하면 루프를 종료합니다.
                                   break;
                                 }
                                 String updatedTime = '$time시';
-                                FirebaseFirestore.instance
+
+                                // 데이터베이스에서 예약 시간을 체크합니다.
+                                DocumentSnapshot snapshot = await FirebaseFirestore.instance
                                     .collection('chair')
                                     .doc(chairNumber)
-                                    .update({updatedTime: uid_chair});
-                                bookedUserId = uid_chair;
+                                    .get();
+
+                                if(snapshot.get(updatedTime) != "a") {
+                                  // 만약 예약이 이미 있다면 스낵바를 표시하고 예약 여부를 true로 설정합니다.
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text("예약이 이미 있습니다."),
+                                  ));
+                                  isReserved = true;  // 예약 여부를 true로 설정합니다.
+                                  break;
+                                }
+                              }
+
+                              if(!isReserved) {
+                                for (int i = 0; i < _selectedHours; i++) {
+                                  int time = int.parse(widget.time.replaceFirst('시', '')) + i;
+                                  if (time > 20) {  // 만약 시간이 20을 초과하면 루프를 종료합니다.
+                                    break;
+                                  }
+                                  String updatedTime = '$time시';
+                                  FirebaseFirestore.instance
+                                      .collection('chair')
+                                      .doc(chairNumber)
+                                      .update({updatedTime: uid_chair});
+                                  bookedUserId = uid_chair;
+                                }
                               }
                               setState(() {
                                 _isLoading =
