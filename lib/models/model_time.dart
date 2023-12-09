@@ -14,30 +14,36 @@ import 'package:flutter/material.dart';
 import 'package:test_1/models/model_tabstate.dart';
 import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:test_1/main.dart';
+import 'package:test_1/models/model_tabstate.dart';
 
 class LogoutTimerProvider with ChangeNotifier,WidgetsBindingObserver {
   bool hasLogoutCompleted = false;
-  Duration _logoutDuration = Duration(seconds: 100);
+  Duration logoutDuration = Duration(seconds: 20);
   late CollectionReference itemsReference;
   List<Item> items = [];
 
+  final FirebaseAuthProvider _authProvider;
+  final TabState _tabState;
   final ItemProvider itemProvider;
   Function()? onLogoutComplete;
 
-  final FirebaseAuthProvider _authProvider;
-
   Timer? _timer;
-  LogoutTimerProvider({FirebaseAuthProvider? authProvider, ItemProvider? itemProv})
+  LogoutTimerProvider({FirebaseAuthProvider? authProvider, ItemProvider? itemProv, TabState? tabState})
       : _authProvider = authProvider ?? FirebaseAuthProvider(),
-        itemProvider = itemProv ?? ItemProvider(){
+        itemProvider = itemProv ?? ItemProvider(),
+        _tabState = tabState ?? TabState() {
     WidgetsBinding.instance.addObserver(this);
   }
+
+  // Future<void> setLogoutDuration (Duration duration) async {
+  //   logoutDuration = Duration(seconds: 20);
+  // }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
     if (state == AppLifecycleState.paused) {
       // 앱이 백그라운드로 갔을 때 현재 시간을 저장
       await prefs.setInt('backgroundTime', DateTime.now().millisecondsSinceEpoch);
@@ -47,11 +53,16 @@ class LogoutTimerProvider with ChangeNotifier,WidgetsBindingObserver {
       if (backgroundTime != null) {
         Duration diff = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(backgroundTime));
         // diff를 사용하여 남은 시간을 계산
-        if (_logoutDuration > diff) {
-          _logoutDuration -= diff;
+        if (logoutDuration > diff) {
+          logoutDuration -= diff;
+          // logoutAndRedirect_1();
+          await startLogoutCountdown();
         } else {
-          _logoutDuration = Duration(seconds: 0);
+          logoutDuration = Duration(seconds: 0);
+          // logoutAndRedirect();
+          // logoutUser(); // 카운트다운이 끝났을 때 로그아웃 처리
         }
+        await prefs.remove('backgroundTime');
         notifyListeners();
       }
     }
@@ -70,43 +81,88 @@ class LogoutTimerProvider with ChangeNotifier,WidgetsBindingObserver {
     notifyListeners();
   }
 
-  Future<void> startLogoutCountdown() async{
+  Future<void> startLogoutCountdown() async {
+    cancelLogoutTimer();
+    if(_isCountdownStarted) {
+      return;
+    }
     _isCountdownStarted = true;
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
+      if (logoutDuration <= Duration(seconds:0)) {
+        // logoutAndRedirect_1();
+        _isCountdownStarted = false;
 
-      if (_logoutDuration == Duration(seconds:0)) {
-        if (onLogoutComplete != null) {
-          onLogoutComplete!();
-          // notifyListeners();
-        }
-        // notifyListeners();
+        await logoutUser(); // 카운트다운이 끝났을 때 로그아웃 처리
+        // cancelLogoutTimer();
+        // _isCountdownStarted = false;
+        // logoutDuration = Duration(seconds: 20);
+        // print(_logoutDuration);
+        // if (onLogoutComplete != null) {
+        //   onLogoutComplete!();
+        // }
+        // if (_logoutDuration == Duration(seconds:0))
+        // logoutUser(); // 카운트다운이 끝났을 때 로그아웃 처리
       } else {
-        _logoutDuration = _logoutDuration - Duration(seconds: 1);
-        notifyListeners(); // UI 갱신을 위해 호출
+        logoutDuration = logoutDuration - Duration(seconds: 1); // 카운트다운 시간 감소
+        notifyListeners();
       }
     });
   }
 
   Future<void> logoutUser() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('isLogin', false);
-    prefs.setString('email', '');
-    prefs.setString('password', '');
-    await _authProvider.logout(); // FirebaseAuthProvider의 logout() 메서드 호출
+    DocumentReference docRef = FirebaseFirestore.instance
+        .collection('items1')
+        .doc('AN4TLA8ts0AGLAlivfoM');
+
+    // 문서를 가져와 'price' 필드의 값 확인
+    DocumentSnapshot docSnap = await docRef.get();
+    if (docSnap.exists) {
+      Map<String, dynamic>? data = docSnap.data() as Map<String, dynamic>?;
+      if (data != null && data.containsKey('price') && data['price'] > 0) {
+        // 'price' 필드의 값이 0 초과일 때만 감소
+        await docRef.update({
+          'price': FieldValue.increment(-1)
+        });
+      }
+    }
+    logoutDuration = Duration(seconds: 20);
     await cancelLogoutTimer();
-    _logoutDuration = Duration(seconds: 10);
-    notifyListeners();
+    await _tabState.resetClick();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    await logoutAndRedirect_1();
+    // await _tabState.resetClick();
+    // await _authProvider.logout(); // FirebaseAuthProvider의 logout() 메서드 호출
+    // await cancelLogoutTimer();
+    // logoutDuration = Duration(seconds: 20);
+    // notifyListeners();
+  }
+
+  Future<void> logoutUser_1() async {
+    await cancelLogoutTimer();
+    await _tabState.resetClick();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    await logoutAndRedirect_1();
+    // await _tabState.resetClick();
+    // await _authProvider.logout(); // FirebaseAuthProvider의 logout() 메서드 호출
+    // await cancelLogoutTimer();
+    logoutDuration = Duration(seconds: 20);
+    // notifyListeners();
   }
 
   Future<void> cancelLogoutTimer() async {
-    _timer?.cancel();
-    _timer = null;
+    if (_timer != null) {
+      _timer?.cancel();
+      _timer = null;
+    }
+    _isCountdownStarted = false;
   }
 
   String getRemainingTime() {
     if (_timer == null || !_timer!.isActive) return '00:00';
     final now = DateTime.now();
-    final logoutTime = now.add(_logoutDuration);
+    final logoutTime = now.add(logoutDuration);
     final remainingDuration = logoutTime.difference(now);
 
     String twoDigits(int n) => n.toString().padLeft(2, "0");
@@ -128,8 +184,22 @@ class LogoutTimerProvider with ChangeNotifier,WidgetsBindingObserver {
     return intTime;
   }
   void addTime(Duration additionalTime) {
-    _logoutDuration += additionalTime;
+    logoutDuration += additionalTime;
     notifyListeners();
+  }
+
+  Future<void> logoutAndRedirect_1() async {
+    // navigatorKey.currentContext 가 null 인 경우 처리
+    // if (navigatorKey.currentContext == null) {
+    //   print('Navigator key is not currently associated with any widget.');
+    //   return;
+    // }
+    // ScaffoldMessenger.of(navigatorKey.currentContext!)
+    //   ..hideCurrentSnackBar()
+    //   ..showSnackBar(SnackBar(content: Text('logout!')));
+
+    // GlobalKey를 사용하여 Navigator 상태에 접근
+    navigatorKey.currentState!.pushReplacementNamed('/login');
   }
 
 

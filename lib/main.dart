@@ -21,6 +21,11 @@ import 'package:test_1/models/model_permission.dart';
 // final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 final notifications = FlutterLocalNotificationsPlugin();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+// Duration _logoutDuration = Duration(seconds: 20);
+
+// void setLogoutDuration (Duration duration) async {
+//   _logoutDuration = duration;
+// }
 
 // initNotification() async {
 //
@@ -119,11 +124,10 @@ class MyApp extends StatelessWidget {
 
 Future<void> logoutAndRedirect() async {
   // navigatorKey.currentContext 가 null 인 경우 처리
-  if (navigatorKey.currentContext == null) {
-    print('Navigator key is not currently associated with any widget.');
-    return;
-  }
-
+  // if (navigatorKey.currentContext == null) {
+  //   print('Navigator key is not currently associated with any widget.');
+  //   return;
+  // }
   // ScaffoldMessenger.of(navigatorKey.currentContext!)
   //   ..hideCurrentSnackBar()
   //   ..showSnackBar(SnackBar(content: Text('logout!')));

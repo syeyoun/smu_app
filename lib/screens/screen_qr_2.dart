@@ -140,7 +140,7 @@ class _ScannerScreenState2 extends State<ScannerScreen_2> {
         await prefs.setString('card_data', scanData.code!);
 
         cardVal = prefs.getString('card_data')!;
-        print(cardVal);
+        // print(cardVal);
 
         if (cardVal == 'https://me-qr.com/EEtHTSEE') {
           updateCardWithUsername();

@@ -24,10 +24,17 @@ class FirebaseAuthProvider with ChangeNotifier {
 
   FirebaseAuthProvider({auth}) : authClient = auth ?? FirebaseAuth.instance;
 
-  Future<AuthStatus> registerWithEmail(String email, String password) async {
+  Future<AuthStatus> registerWithEmail(String email, String password, String username, String studentid) async {
     try {
       UserCredential credential = await authClient
           .createUserWithEmailAndPassword(email: email, password: password);
+
+      final user = FirebaseAuth.instance.currentUser;
+      String? uid = credential.user?.uid;
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'username': username,
+        'studentID': studentid,
+      });
       return AuthStatus.registerSuccess;
     } catch (e) {
       return AuthStatus.registerFail;

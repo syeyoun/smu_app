@@ -7,7 +7,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:test_1/tabs/tab_home.dart';
 import 'package:test_1/tabs/tab_profile.dart';
-import 'package:test_1/tabs/tab_visible_1.dart';
 import 'package:test_1/models/model_hash.dart';
 import 'package:provider/provider.dart';
 

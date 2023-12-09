@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:flutter/services.dart';
 
 
 class TabLock extends StatelessWidget {
@@ -591,7 +592,7 @@ class PostList1 extends StatelessWidget {
                         primary: Color(0xff0E207F),
                       ),
                     ),
-                    SizedBox(height: 4),
+                    /*SizedBox(height: 4),
                     ElevatedButton(
                       onPressed: () async {
                         //
@@ -600,7 +601,7 @@ class PostList1 extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         primary: Color(0xff0E207F),
                       ),
-                    ),
+                    ),*/
                     SizedBox(height: 4),
                     ElevatedButton(
                       onPressed: () async {
@@ -955,6 +956,7 @@ class Study {
   final int recruitmentLimit;
   final List<String> members;
   final DateTime recruitmentDate;
+  final String contact;
 
   Study({
     required this.id,
@@ -963,6 +965,7 @@ class Study {
     required this.recruitmentLimit,
     required this.members,
     required this.recruitmentDate,
+    required this.contact,
   });
 
   factory Study.fromFirestore(DocumentSnapshot doc) {
@@ -974,6 +977,7 @@ class Study {
       recruitmentLimit: data['recruitmentLimit'] ?? 0,
       members: List.from(data['members'] ?? []),
       recruitmentDate: (data['recruitmentDate'] as Timestamp).toDate(),
+      contact: data['contact'] ?? '',
     );
   }
 }
@@ -981,49 +985,160 @@ class Study {
 class StudyListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: FirebaseFirestore.instance.collection('studies').orderBy('recruitmentDate').get(),
+    DateTime currentDate = DateTime.now();
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection('studies')
+          .orderBy('recruitmentDate')
+          .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
+        } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          // 데이터가 없는 경우
+          return Scaffold(
+            appBar: AppBar(
+              title: Text('스터디 목록'),
+              backgroundColor: Color(0xff0E207F),
+            ),
+            body: Center(
+              child: Text('등록된 스터디가 없습니다.'),
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CreateStudyPage()),
+                );
+              },
+              backgroundColor: Color(0xff0E207F),
+              child: Icon(Icons.add),
+            ),
+          );
         } else {
           List<Study> studies = snapshot.data!.docs.map((doc) => Study.fromFirestore(doc)).toList();
+
+          // 마감일이 조금 남은 것과 지난 것을 분리
+          List<Study> upcomingStudies = [];
+          List<Study> pastStudies = [];
+
+          for (Study study in studies) {
+            Duration remainingDays = study.recruitmentDate.difference(currentDate);
+            if (remainingDays.inDays > 0) {
+              upcomingStudies.add(study);
+            } else {
+              pastStudies.add(study);
+            }
+          }
+
+          // 조건에 맞게 정렬된 리스트
+          List<Study> sortedStudies = upcomingStudies + pastStudies;
 
           return Scaffold(
             appBar: AppBar(
               title: Text('스터디 목록'),
+              backgroundColor: Color(0xff0E207F),
             ),
             body: ListView.builder(
-              itemCount: studies.length,
+              itemCount: sortedStudies.length * 2 - 1,
               itemBuilder: (context, index) {
-                Study study = studies[index];
+                if (index.isOdd) {
+                  return Divider();
+                }
+                Study study = sortedStudies[index ~/ 2];
+
+                Duration remainingDays = study.recruitmentDate.difference(currentDate);
+                String remainingDaysText = remainingDays.inDays > 0
+                    ? 'D-${remainingDays.inDays}'
+                    : '마감';
+
                 return ListTile(
                   title: Text(study.title),
-                  subtitle: Text(study.description),
-                  trailing: Text('모집 인원: ${study.recruitmentLimit} | 모집 날짜: ${study.recruitmentDate.toString()}'),
+                  subtitle: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          study.description,
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          '$remainingDaysText',
+                        ),
+                      ),
+                    ],
+                  ),
                   onTap: () {
-                    // 스터디 상세 정보 페이지로 이동하는 로직 추가
-                    // 예: Navigator.push(context, MaterialPageRoute(builder: (context) => StudyDetailPage(study: study)));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => StudyDetailPage(study: study)),
+                    );
                   },
                 );
               },
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                // 스터디 생성 페이지로 이동하는 로직 추가
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => CreateStudyPage()),
                 );
               },
+              backgroundColor: Color(0xff0E207F),
               child: Icon(Icons.add),
             ),
           );
         }
       },
     );
+  }
+}
+
+class StudyDetailPage extends StatelessWidget {
+  final Study study;
+  late final String formattedDate;
+
+  StudyDetailPage({required this.study}) {
+    formattedDate = '${study.recruitmentDate.year}-${_twoDigits(study.recruitmentDate.month)}-${_twoDigits(study.recruitmentDate.day)} ${_twoDigits(study.recruitmentDate.hour)}:${_twoDigits(study.recruitmentDate.minute)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xff0E207F),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${study.title}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            Text('${study.description}'),
+            SizedBox(height: 30),
+            Text('모집 인원: ${study.recruitmentLimit}명', style: TextStyle(fontSize: 10)),
+            SizedBox(height: 10),
+            Text('모집 날짜: $formattedDate 까지', style: TextStyle(fontSize: 10)),
+            SizedBox(height: 10),
+            Text('연락처: ${study.contact}', style: TextStyle(fontSize: 10)),
+            // 추가적인 정보 표시 가능
+          ],
+        ),
+      ),
+    );
+  }
+  String _twoDigits(int n) {
+    if (n >= 10) {
+      return '$n';
+    } else {
+      return '0$n';
+    }
   }
 }
 
@@ -1036,19 +1151,34 @@ class _CreateStudyPageState extends State<CreateStudyPage> {
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   TextEditingController recruitmentLimitController = TextEditingController();
-  DateTime selectedDate = DateTime.now(); // 모집 날짜 추가
+  DateTime? selectedDate; // 모집 날짜 추가, null로 초기화
+  TextEditingController contactController = TextEditingController();
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime picked = (await showDatePicker(
+    final DateTime tomorrow = DateTime.now().add(Duration(days: 1));
+    final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(2000),
+      initialDate: selectedDate ?? tomorrow,
+      firstDate: tomorrow, // 현재 날짜 이후의 날짜만 선택 가능
       lastDate: DateTime(2101),
-    ))!;
-    if (picked != null && picked != selectedDate)
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: Color(0xff0E207F),
+            colorScheme: ColorScheme.light(primary: Color(0xff0E207F)),
+            buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      // 사용자가 날짜를 선택한 경우에만 업데이트
       setState(() {
         selectedDate = picked;
       });
+    }
   }
 
   @override
@@ -1056,6 +1186,7 @@ class _CreateStudyPageState extends State<CreateStudyPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('스터디 생성'),
+        backgroundColor: Color(0xff0E207F),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -1074,38 +1205,90 @@ class _CreateStudyPageState extends State<CreateStudyPage> {
             TextField(
               controller: recruitmentLimitController,
               keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly], // 숫자만 입력 가능하도록 설정
               decoration: InputDecoration(labelText: '모집 인원'),
             ),
             SizedBox(height: 16.0),
             Row(
               children: [
-                Text('모집 날짜: ${selectedDate.toLocal()}'),
+                Text('모집 날짜: ${selectedDate?.toLocal() ?? '날짜 선택 안됨'}'),
                 SizedBox(width: 20.0),
                 ElevatedButton(
                   onPressed: () => _selectDate(context),
                   child: Text('날짜 선택'),
+                  style: ElevatedButton.styleFrom(
+                    primary: Color(0xff0E207F),
+                  ),
                 ),
               ],
             ),
             SizedBox(height: 16.0),
+            TextField(
+              controller: contactController,
+              decoration: InputDecoration(labelText: '연락처'),
+              keyboardType: TextInputType.phone, // 숫자 및 기호 입력을 허용
+            ),
+            SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () async {
-                String title = titleController.text;
-                String description = descriptionController.text;
-                int recruitmentLimit = int.parse(recruitmentLimitController.text);
-                List<String> members = [];
+                if (selectedDate != null) {
+                  String title = titleController.text;
+                  String description = descriptionController.text;
+                  int recruitmentLimit = int.tryParse(recruitmentLimitController.text) ?? 0;
+                  String contact = contactController.text;
 
-                await FirebaseFirestore.instance.collection('studies').add({
-                  'title': title,
-                  'description': description,
-                  'recruitmentLimit': recruitmentLimit,
-                  'members': members,
-                  'recruitmentDate': selectedDate, // 모집 날짜 추가
-                });
-                Navigator.pop(context);
-                // 여기에서 생성한 스터디 데이터를 다음 페이지로 전달하거나 저장할 수 있음
+                  if (title.isNotEmpty && description.isNotEmpty && recruitmentLimit > 0 && contact.isNotEmpty) {
+                    List<String> members = [];
+
+                    await FirebaseFirestore.instance.collection('studies').add({
+                      'title': title,
+                      'description': description,
+                      'recruitmentLimit': recruitmentLimit,
+                      'members': members,
+                      'recruitmentDate': selectedDate, // 모집 날짜 추가
+                      'contact': contactController.text,
+                    });
+
+                    Navigator.pop(context);
+                  } else {
+                    // 내용이 비어있을 때 스낵바 표시
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('제목, 설명, 모집 인원, 연락처를 모두 입력해주세요.'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                } else {
+                  // 사용자가 날짜를 선택하지 않았을 경우에 대한 처리
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('날짜 선택 오류'),
+                        content: Text('날짜를 선택해주세요.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text(
+                              '확인',
+                              style: TextStyle(
+                                color: Color(0xff0E207F), // 원하는 색상으로 변경
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
               },
               child: Text('스터디 생성'),
+              style: ElevatedButton.styleFrom(
+                primary: Color(0xff0E207F),
+              ),
             ),
           ],
         ),

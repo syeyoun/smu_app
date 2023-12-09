@@ -128,7 +128,12 @@ import 'package:test_1/models/model_auth.dart';
 import 'package:test_1/models/model_login.dart';
 import 'package:test_1/models/model_permission.dart';
 import 'package:test_1/models/model_hash.dart';
+import 'package:test_1/models/model_time.dart';
+import 'package:test_1/main.dart';
+import 'package:flutter/foundation.dart';
+import 'package:test_1/models/model_tabstate.dart';
 
+// Duration duration = Duration(seconds: 20);
 class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -204,7 +209,19 @@ class LoginButton extends StatelessWidget {
     final login = Provider.of<LoginModel>(context, listen: false);
     final userPermissionProvider = Provider.of<UserPermissionProvider>(context, listen: false); // 추가된 부분
     final hashProvider = Provider.of<HashProvider>(context);
+    final logoutTimerProvider = Provider.of<LogoutTimerProvider>(context);
+    final tabState = Provider.of<TabState>(context);
 
+    // Duration logoutDuration = Provider.of<LogoutTimerProvider>(context, listen: false).logoutDuration;
+    // Duration duration = Duration(seconds: 20);
+    // Future<void> setLogoutDuration (Duration duration) async {
+    //   logoutDuration = duration;
+    // }
+    Duration logoutDuration = Provider.of<LogoutTimerProvider>(context, listen: false).logoutDuration;
+    // Duration duration = Duration(seconds: 20);
+    Future<void> setLogoutDuration_login(Duration duration) async {
+      logoutDuration = Duration(seconds: 20);
+    }
     return Container(
       width: MediaQuery.of(context).size.width * 0.7,
       height: MediaQuery.of(context).size.height * 0.05,
@@ -227,12 +244,8 @@ class LoginButton extends StatelessWidget {
                         authClient.user!.email! +
                         ' '))); //email자리에 username 넣기
 
-              // 권한 부여 과정 추가
-              if(authClient.user != null && authClient.user!.email != null) {
-                userPermissionProvider.email = authClient.user!.email!;
-                await userPermissionProvider.updateAccess();
-              }
-
+              await setLogoutDuration_login(logoutDuration);
+              await tabState.resetClick();
               if( hashProvider.qrnum == null){
                 await hashProvider.getQRNumFromFirebase();
               }

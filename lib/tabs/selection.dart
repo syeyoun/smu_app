@@ -4,11 +4,25 @@ import 'package:test_1/tabs/seat_n.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+Future<int> countFieldAInChairCollection() async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('chair').get();
+  int fieldACount = 0;
+  for (DocumentSnapshot doc in querySnapshot.docs) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    data.forEach((key, value) {
+      if (value is String && value == 'a') {
+        fieldACount++;
+      }
+    });
+  }
+  return 18 - fieldACount;
+}
+
 class design {
   static InputDecoration dec(String b) {
     InputDecoration c = InputDecoration(
         contentPadding: EdgeInsets.all(8),
-        hoverColor: Colors.black12,
+        hoverColor: Color(0xff0E207F),
         border: InputBorder.none,
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(8.0)),
@@ -22,7 +36,7 @@ class design {
         fillColor: Color.fromRGBO(239, 239, 239, 1),
         filled: true,
         labelText: b,
-        labelStyle: TextStyle(color: Colors.black));
+        labelStyle: TextStyle(color: Color(0xff0E207F)));
     return c;
   }
 
@@ -36,17 +50,17 @@ class design {
       ),
       boxShadow: [
         BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.25),
+            color: Color(0xff0E207F),
             offset: Offset(0, 4),
             blurRadius: 4)
       ],
-      color: Color.fromRGBO(255, 205, 5, 1),
+      color: Color(0xff0E207F),
     );
   }
 
   static TextStyle texst(double a, FontWeight b){
     return TextStyle(
-      color: Color.fromRGBO(0, 0, 0, 1),
+      color: Color(0xff0E207F),
       fontFamily: 'Inter',
       fontSize: a,
 
@@ -87,20 +101,28 @@ class _busbookState extends State<busbook> {
           children: [
             Container(
               height: MediaQuery.of(context).size.height / 4,
-              color: Color.fromRGBO(255, 205, 5, 1),
+              // color: Color.fromRGBO(255, 205, 5, 1),
               child: Stack(
                 children: [
                   Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('좌석',
-                            style: design.texst(24, FontWeight.w700)),
-                        Container(
-                          height: 20,
+                        FutureBuilder<int>(
+                          future: countFieldAInChairCollection(),
+                          builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Text('데이터 로딩 중...');
+                            } else if (snapshot.hasError) {
+                              return Text('데이터 로드 실패: ${snapshot.error}');
+                            } else {
+                              return Text(
+                                '남은 예약 가능 시간: ${snapshot.data}'+'시간',
+                                style: TextStyle(fontSize:(20),color:(Color((0xff0E207F)))),
+                              );
+                            }
+                          },
                         ),
-                        Text('? 자리 남아있어요',
-                            style: design.texst((18), FontWeight.w400))
                       ],
                     ),
                   )
@@ -108,10 +130,12 @@ class _busbookState extends State<busbook> {
               ),
             ),
             Container(
-              height: 7,
+              height: 5,
             ),
-            Text('Choose seats',
-                style: design.texst(18, FontWeight.w700)),
+            Text(
+              '예약할 테이블을 선택 해주세요',
+              style: TextStyle(fontSize:(20),color:(Color((0xff0E207F))))
+            ),
             Container(
               height: 7,
             ),

@@ -281,7 +281,7 @@ class RegistButton extends StatelessWidget {
         ),
         onPressed: () async {
           await authClient
-              .registerWithEmail(register.email, register.password)
+              .registerWithEmail(register.email, register.password, register.username, register.studentid)
               .then((registerStatus) {
             if (registerStatus == AuthStatus.registerSuccess) {
               ScaffoldMessenger.of(context)

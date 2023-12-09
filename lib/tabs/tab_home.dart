@@ -40,9 +40,9 @@ class TabHome extends StatelessWidget {
                               left: 100, // replace with actual values
                               child:
                               Text (
-                                  itemProvider.items[index].open ? '열려있어요!' : '닫혀있어요!',
+                                  "과방 문: " + (itemProvider.items[index].open ? '열림' : '닫힘'),
                                   style:
-                                  TextStyle(fontSize :(25),color :(Color((0xff0E207F))))
+                                  TextStyle(fontSize :(20),color :(Color((0xff0E207F))))
                               )
                           ),
                           Positioned(
@@ -50,9 +50,9 @@ class TabHome extends StatelessWidget {
                               left: 100, // replace with actual values
                               child :
                               Text (
-                                  itemProvider.items[index].price.toString()+'명이 사용중이에',
+                                  '사용중인 인원: '+ itemProvider.items[index].price.toString()+'명',
                                   style:
-                                  TextStyle(fontSize:(25),color:(Color((0xff0E207F))))
+                                  TextStyle(fontSize:(20),color:(Color((0xff0E207F))))
                               )
                           ),
                           Positioned(
@@ -60,9 +60,9 @@ class TabHome extends StatelessWidget {
                               left: 100, // replace with actual values
                               child :
                               Text (
-                                  itemProvider.items[index].card.toString()+'이 카드를 가지고 있어요!',
+                                  '카드 소지자: '+ itemProvider.items[index].card.toString(),
                                   style:
-                                  TextStyle(fontSize:(25),color:(Color((0xff0E207F))))
+                                  TextStyle(fontSize:(20),color:(Color((0xff0E207F))))
                               )
                           ),
                         ],

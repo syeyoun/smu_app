@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +20,20 @@ class MyWidget_1 extends StatefulWidget {
 
 class _MyWidgetState extends State<MyWidget_1> {
   bool isClicked = false; // 초기 상태는 false
+  //User? user = FirebaseAuth.instance.currentUser!;
+  FirebaseAuth auth = FirebaseAuth.instance;
+
+  Future<Map<String, dynamic>?> _getUserInfo(String userId) async {
+    DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get();
+
+    // 사용자 정보가 존재하지 않을 경우 null 반환
+    return userSnapshot.exists
+        ? userSnapshot.data() as Map<String, dynamic>
+        : null;
+  }
 
   bool _isRemainingTimeValid(String? remainingTimeString) {
     if (remainingTimeString == null) return false;
@@ -36,6 +52,18 @@ class _MyWidgetState extends State<MyWidget_1> {
     return hours * 60 + minutes;
   }
 
+  Future<Map<String, dynamic>?> _getUInfo(String userId) async {
+    DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get();
+
+    // 사용자 정보가 존재하지 않을 경우 null 반환
+    return userSnapshot.exists
+        ? userSnapshot.data() as Map<String, dynamic>
+        : null;
+  }
+
   @override
   Widget build(BuildContext context) {
     // FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -46,6 +74,8 @@ class _MyWidgetState extends State<MyWidget_1> {
     hashProvider.getQRCodeDataFromSharedPreferences();
     var hash = hashProvider.hashValue;
     var r_qr = hashProvider.qrnum;
+    String uid_attendance = auth.currentUser!.uid;
+    //print(uid_attendance);
 
     return FutureBuilder(
         future: itemProvider.fetchItems(),
@@ -58,8 +88,8 @@ class _MyWidgetState extends State<MyWidget_1> {
                   top: 200,
                   left: 100,
                   child:
-                  Text("사용중!", style:
-                  TextStyle(fontSize: 35, color: Color((0xff0E207F))),
+                  Text("사용중", style:
+                  TextStyle(fontSize: 20, color: Color((0xff0E207F))),
                   ),
                 ),
                 Positioned(
@@ -67,16 +97,16 @@ class _MyWidgetState extends State<MyWidget_1> {
                   left: 100,
                   child:
                   Text(
-                      '남은 시간! ${logoutTimerProvider.getRemainingTime()}', style:
-                  TextStyle(fontSize: 35, color: Color(0xff0E207F))),
+                      '남은 시간: ${logoutTimerProvider.getRemainingTime()}', style:
+                  TextStyle(fontSize: 20, color: Color(0xff0E207F))),
                 ),
                 Positioned(
                     bottom: 100,
                     left: 100,
                     child:
                     Container(
-                        width: 300,
-                        height: 90,
+                        width: 200,
+                        height: 60,
                         child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xff0E207F),
@@ -86,11 +116,13 @@ class _MyWidgetState extends State<MyWidget_1> {
                             ),
                             onPressed: (logoutTimerProvider
                                 .isCountdownStarted &&
-                                logoutTimerProvider.getRemainingTime() != null &&
+                                logoutTimerProvider.getRemainingTime() !=
+                                    null &&
                                 _isRemainingTimeValid(
                                     logoutTimerProvider.getRemainingTime()) &&
                                 _getRemainingMinutes(
-                                    logoutTimerProvider.getRemainingTime()) <= 5)
+                                    logoutTimerProvider.getRemainingTime()) <=
+                                    5)
                                 ? () {
                               setState(() {
                                 logoutTimerProvider.addTime(
@@ -98,8 +130,8 @@ class _MyWidgetState extends State<MyWidget_1> {
                               });
                             } : null,
                             child:
-                            Text('연장?', style:
-                            TextStyle(fontSize: 35, color:
+                            Text(tabState.isClicked.toString(), style:
+                            TextStyle(fontSize: 20, color:
                             Colors.white),
                             )
                         )
@@ -110,7 +142,7 @@ class _MyWidgetState extends State<MyWidget_1> {
                   Positioned(
                       bottom: 100, left: 100, child:
                   Container(
-                      width: (300), height: (90), child:
+                      width: (200), height: (60), child:
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor:
                       Color(0xff0E207F),
@@ -118,27 +150,30 @@ class _MyWidgetState extends State<MyWidget_1> {
                         BorderRadius.circular(30.0),),),
                       onPressed: (tabState.isClicked)
                           ? null : () async {
-                        if(hash == r_qr) {
+                        // if (hash == r_qr) {
                           await itemProvider.incrementAllPrices();
                           await tabState.toggleClick();
-                          logoutTimerProvider.onLogoutComplete = () async {
-                            await itemProvider.decrementAllPrices();
-                            logoutTimerProvider.logoutUser();
-                            tabState.resetClick();
-                            logoutAndRedirect();
-                          };
+                          Map<String, dynamic>? userInfo = await _getUInfo(uid_attendance);
+                          await FirebaseFirestore.instance.collection(
+                              'attendance').add({
+                            'user_uid': uid_attendance,
+                            'username': userInfo?['username'],
+                            'studentid': userInfo?['studentID'],
+                            'timestamp': FieldValue.serverTimestamp(),
+                          });
                           await logoutTimerProvider.startLogoutCountdown();
-                        }
-                        else{
-                          ScaffoldMessenger.of(context)
-                            ..hideCurrentSnackBar()
-                            ..showSnackBar(
-                              SnackBar(content: Text('QR인식 후에 다시 시도해주세요.',style: TextStyle(fontSize: 20))),);
-                        }
+                        // }
+                        // else {
+                        //   ScaffoldMessenger.of(context)
+                        //     ..hideCurrentSnackBar()
+                        //     ..showSnackBar(
+                        //       SnackBar(content: Text('QR인식 후에 다시 시도해주세요.',
+                        //           style: TextStyle(fontSize: 20))),);
+                        // }
                       },
                       child:
-                      Text(r_qr.toString(), style:
-                      TextStyle(fontSize: 35, color:
+                      Text(tabState.isClicked.toString(), style:
+                      TextStyle(fontSize: 20, color:
                       Colors.white,),
                       )
                   )
