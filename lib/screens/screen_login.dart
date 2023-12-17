@@ -233,6 +233,8 @@ class LoginButton extends StatelessWidget {
           ),
         ),
         onPressed: () async {
+
+          await setLogoutDuration_login(logoutDuration);
           await authClient
               .loginWithEmail(login.email, login.password)
               .then((loginStatus) async { // async 추가
@@ -246,7 +248,7 @@ class LoginButton extends StatelessWidget {
 
               await setLogoutDuration_login(logoutDuration);
               await tabState.resetClick();
-              if( hashProvider.qrnum == null){
+              if(hashProvider.qrnum == null){
                 await hashProvider.getQRNumFromFirebase();
               }
 

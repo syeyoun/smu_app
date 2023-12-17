@@ -18,6 +18,8 @@ class MyWidget_1 extends StatefulWidget {
   _MyWidgetState createState() => _MyWidgetState();
 }
 
+Duration logoutDuration = Duration(minutes: 10);
+
 class _MyWidgetState extends State<MyWidget_1> {
   bool isClicked = false; // 초기 상태는 false
   //User? user = FirebaseAuth.instance.currentUser!;
@@ -33,6 +35,10 @@ class _MyWidgetState extends State<MyWidget_1> {
     return userSnapshot.exists
         ? userSnapshot.data() as Map<String, dynamic>
         : null;
+  }
+
+  Future<void> setLogoutDuration_login(Duration duration) async {
+    logoutDuration = Duration(minutes: 10);
   }
 
   bool _isRemainingTimeValid(String? remainingTimeString) {
@@ -76,6 +82,7 @@ class _MyWidgetState extends State<MyWidget_1> {
     var r_qr = hashProvider.qrnum;
     String uid_attendance = auth.currentUser!.uid;
     //print(uid_attendance);
+    Duration logoutDuration = Provider.of<LogoutTimerProvider>(context, listen: false).logoutDuration;
 
     return FutureBuilder(
         future: itemProvider.fetchItems(),
@@ -151,6 +158,8 @@ class _MyWidgetState extends State<MyWidget_1> {
                       onPressed: (tabState.isClicked)
                           ? null : () async {
                         if (hash == r_qr) {
+                          final logoutTimerProvider = Provider.of<LogoutTimerProvider>(context);
+                          await setLogoutDuration_login(logoutDuration);
                           await itemProvider.incrementAllPrices();
                           await tabState.toggleClick();
                           Map<String, dynamic>? userInfo = await _getUInfo(uid_attendance);

@@ -53,7 +53,9 @@ class LogoutTimerProvider with ChangeNotifier,WidgetsBindingObserver {
       if (backgroundTime != null) {
         Duration diff = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(backgroundTime));
         // diff를 사용하여 남은 시간을 계산
-        if (logoutDuration > diff) {
+        if (logoutDuration == null) {
+          logoutDuration = Duration(minutes: 10); // logoutDuration이 null이면 10초로 설정
+        } else if (logoutDuration > diff) {
           // logoutDuration -= diff;
           // logoutAndRedirect_1();
           if(_tabState == true) {
