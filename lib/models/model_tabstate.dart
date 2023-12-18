@@ -32,8 +32,4 @@ class TabState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // void setOnLogoutComplete(Future<void> Function()? callback) {
-  //   _onLogoutComplete = callback;
-  //   notifyListeners();
-  // }
 }

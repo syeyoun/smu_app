@@ -86,12 +86,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('scanned_data', scanData.code!);//여기서 Scandata.codde는 널값 아니라 함
         print(prefs.getString('scanned_data'));
-        //Provider.of<HashProvider>(context, listen: false).updateHash(scanData.code!);
-        //방금 추가
-        /*var hashProvider = Provider.of<HashProvider>(context);
-        hashProvider.getQRCodeDataFromSharedPreferences();
-        hash = hashProvider.hashValue!;
-*/
         this.controller?.dispose();
         Navigator.pop(context);
       }

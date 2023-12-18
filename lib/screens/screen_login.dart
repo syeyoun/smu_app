@@ -212,13 +212,7 @@ class LoginButton extends StatelessWidget {
     final logoutTimerProvider = Provider.of<LogoutTimerProvider>(context);
     final tabState = Provider.of<TabState>(context);
 
-    // Duration logoutDuration = Provider.of<LogoutTimerProvider>(context, listen: false).logoutDuration;
-    // Duration duration = Duration(seconds: 20);
-    // Future<void> setLogoutDuration (Duration duration) async {
-    //   logoutDuration = duration;
-    // }
     Duration logoutDuration = Provider.of<LogoutTimerProvider>(context, listen: false).logoutDuration;
-    // Duration duration = Duration(seconds: 20);
     Future<void> setLogoutDuration_login(Duration duration) async {
       logoutDuration = Duration(minutes: 10);
     }

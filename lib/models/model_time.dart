@@ -194,16 +194,6 @@ class LogoutTimerProvider with ChangeNotifier,WidgetsBindingObserver {
   }
 
   Future<void> logoutAndRedirect_1() async {
-    // navigatorKey.currentContext 가 null 인 경우 처리
-    // if (navigatorKey.currentContext == null) {
-    //   print('Navigator key is not currently associated with any widget.');
-    //   return;
-    // }
-    // ScaffoldMessenger.of(navigatorKey.currentContext!)
-    //   ..hideCurrentSnackBar()
-    //   ..showSnackBar(SnackBar(content: Text('logout!')));
-
-    // GlobalKey를 사용하여 Navigator 상태에 접근
     navigatorKey.currentState!.pushReplacementNamed('/login');
   }
 

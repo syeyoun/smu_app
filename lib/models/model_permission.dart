@@ -9,7 +9,6 @@ import 'package:test_1/models/model_item_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:test_1/models/model_auth.dart';
-
 import 'package:flutter/foundation.dart';
 
 class UserPermissionProvider with ChangeNotifier {
@@ -32,22 +31,7 @@ class UserPermissionProvider with ChangeNotifier {
     _hasAccessToTabCard = value;
     notifyListeners();
   }
-  // String _email = '';
-  // bool _hasAccessToTabCard = false;
-  //
-  // String get email => _email;
-  // set email(String email) {
-  //   _email = email;
-  //   grantAccessToTabCard(); // 이메일이 설정된 후에 grantAccessToTabCard 메소드를 호출
-  //   notifyListeners();
-  // }
-  //
-  // bool get hasAccessToTabCard => _hasAccessToTabCard;
-  // set hasAccessToTabCard(bool value) {
-  //   _hasAccessToTabCard = value;
-  //   notifyListeners();
-  // }
-  //
+
   Future<void> grantAccessToTabCard() async {
     if (_email == 's@gmail.com' ) {
       _hasAccessToTabCard = true;

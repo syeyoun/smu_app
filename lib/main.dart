@@ -18,32 +18,8 @@ import 'package:test_1/models/model_tabstate.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:test_1/models/model_permission.dart';
 
-// final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 final notifications = FlutterLocalNotificationsPlugin();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-// Duration _logoutDuration = Duration(seconds: 20);
-
-// void setLogoutDuration (Duration duration) async {
-//   _logoutDuration = duration;
-// }
-
-// initNotification() async {
-//
-//   // var androidSetting = AndroidInitializationSettings('app_icon');
-//
-//   var initializationSettings = InitializationSettings(
-//       // android: androidSetting,
-//   );
-//   await notifications.initialize(
-//     initializationSettings,
-//     //onSelectNotification: 함수명추가
-//   );
-// }
-
-// Future<void> initializeRQR() async {
-//   var r_qr = await hashProvider.getQRNumFromFirebase();
-//   // print(r_qr);
-// }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -123,15 +99,5 @@ class MyApp extends StatelessWidget {
 }
 
 Future<void> logoutAndRedirect() async {
-  // navigatorKey.currentContext 가 null 인 경우 처리
-  // if (navigatorKey.currentContext == null) {
-  //   print('Navigator key is not currently associated with any widget.');
-  //   return;
-  // }
-  // ScaffoldMessenger.of(navigatorKey.currentContext!)
-  //   ..hideCurrentSnackBar()
-  //   ..showSnackBar(SnackBar(content: Text('logout!')));
-
-  // GlobalKey를 사용하여 Navigator 상태에 접근
   navigatorKey.currentState!.pushReplacementNamed('/login');
 }
