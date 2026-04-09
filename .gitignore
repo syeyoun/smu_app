@@ -1,3 +1,6 @@
+# Raspberry Pi - Firebase 인증 키 (절대 커밋 금지)
+raspberry_pi/serviceAccountKey.json
+
 # Miscellaneous
 *.class
 *.log
